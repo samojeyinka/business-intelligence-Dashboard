@@ -202,14 +202,14 @@ const FeaturesSection: React.FC = () => {
               </CardDescription>
             </CardHeader>
             
-            <CardContent className="pt-4 text-center">
-              <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-6">
+            <CardContent className="pt-6 pb-8 text-center">
+              <p className="text-lg text-slate-300 max-w-3xl mx-auto mb-12">
                 Whether you're building, investing, collaborating, or advising—Coact is a launchpad for creators of the next era.
               </p>
               
               {/* Interactive Futuristic Ecosystem Visualization */}
-              <div className="relative w-full max-w-5xl mx-auto h-96 my-12">
-                {/* Central Hub */}
+              <div className="relative w-full max-w-5xl mx-auto h-96 my-16">
+                {/* Central Hub - Perfectly centered */}
                 <motion.div 
                   className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
                   initial={{ scale: 0.9 }}
@@ -221,7 +221,7 @@ const FeaturesSection: React.FC = () => {
                     ease: "easeInOut" 
                   }}
                 >
-                  <div className="w-40 h-40 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center relative">
+                  <div className="w-44 h-44 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 flex items-center justify-center relative">
                     {/* Pulsing rings */}
                     <motion.div 
                       className="absolute inset-0 rounded-full border-2 border-blue-400/30"
@@ -244,7 +244,7 @@ const FeaturesSection: React.FC = () => {
                   </div>
                 </motion.div>
                 
-                {/* Orbital Paths - Semi-transparent rings */}
+                {/* Orbital Paths - Semi-transparent rings - Perfectly centered */}
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[500px] h-[500px] rounded-full border border-slate-600/30 z-10"></div>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[400px] h-[400px] rounded-full border border-slate-600/20 z-10"></div>
                 <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 w-[300px] h-[300px] rounded-full border border-slate-600/10 z-10"></div>
@@ -396,7 +396,7 @@ const FeaturesSection: React.FC = () => {
                     }}
                   />
                   
-                  <CardHeader className="pb-2 relative z-10">
+                  <CardHeader className="py-6 pb-3 relative z-10">
                     <div className="flex items-center gap-3">
                       <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500 group-hover:bg-blue-500/20 transition-colors duration-300">
                         {item.icon}
@@ -409,8 +409,8 @@ const FeaturesSection: React.FC = () => {
                     </div>
                   </CardHeader>
                   
-                  <CardContent className="pt-4 relative z-10">
-                    <p className="text-slate-300 mb-4 group-hover:text-slate-200 transition-colors duration-300">{item.description}</p>
+                  <CardContent className="pt-4 pb-8 relative z-10">
+                    <p className="text-slate-300 mb-6 group-hover:text-slate-200 transition-colors duration-300">{item.description}</p>
                     <div className="flex items-start gap-2 text-slate-400 group-hover:text-slate-300 transition-colors duration-300">
                       <motion.div
                         initial={{ x: -5 }}
