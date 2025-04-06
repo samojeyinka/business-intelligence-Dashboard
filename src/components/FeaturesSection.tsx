@@ -1,5 +1,5 @@
-import React from 'react';
-import { motion } from 'framer-motion';
+import React, { useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 import MorphingSection from './MorphingSection';
 import LogoSlider from './LogoSlider';
 import { 
@@ -12,12 +12,21 @@ import {
   Rocket,
   Building,
   Workflow,
-  ArrowRight
+  ArrowRight,
+  Plus,
+  Minus,
+  MousePointerClick,
+  Sparkles
 } from 'lucide-react';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 
 const FeaturesSection: React.FC = () => {
+  // State for interactive elements
+  const [activeMethodIndex, setActiveMethodIndex] = useState<number | null>(null);
+  const [activeSector, setActiveSector] = useState<string | null>(null);
+  const [showFullDescription, setShowFullDescription] = useState(false);
   // Who We Are section
   const whoWeAre = {
     title: "Who We Are",
@@ -141,15 +150,52 @@ const FeaturesSection: React.FC = () => {
                   {whoWeAre.mainDescription}
                 </h2>
                 
-                {/* Mission statement - smaller regular text */}
-                <div className="text-center mb-12">
-                  <p className="text-slate-300 max-w-3xl mx-auto">
-                    {whoWeAre.mission[0]}<br/>
-                    {whoWeAre.mission[1]}
-                  </p>
+                {/* Interactive Mission Statement */}
+                <div className="text-center mb-12 relative">
+                  <motion.div 
+                    className="cursor-pointer mx-auto inline-block"
+                    onClick={() => setShowFullDescription(!showFullDescription)}
+                    whileHover={{ scale: 1.02 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <div className="flex items-center justify-center gap-2 mb-3">
+                      <span className="text-blue-400">
+                        <MousePointerClick size={18} />
+                      </span>
+                      <span className="text-slate-200 font-medium">Our Mission</span>
+                      <span className="text-blue-400">
+                        {showFullDescription ? <Minus size={18} /> : <Plus size={18} />}
+                      </span>
+                    </div>
+                    
+                    <AnimatePresence>
+                      {showFullDescription ? (
+                        <motion.p 
+                          className="text-slate-300 max-w-3xl mx-auto"
+                          initial={{ opacity: 0, height: 0 }}
+                          animate={{ opacity: 1, height: "auto" }}
+                          exit={{ opacity: 0, height: 0 }}
+                          transition={{ duration: 0.3 }}
+                        >
+                          {whoWeAre.mission[0]}<br/>
+                          {whoWeAre.mission[1]}
+                        </motion.p>
+                      ) : (
+                        <motion.p 
+                          className="text-slate-300 max-w-3xl mx-auto"
+                          initial={{ opacity: 0 }}
+                          animate={{ opacity: 1 }}
+                          exit={{ opacity: 0 }}
+                        >
+                          We question what is and imagine what could be.
+                          <span className="text-blue-400 ml-2 text-sm">(Click to expand)</span>
+                        </motion.p>
+                      )}
+                    </AnimatePresence>
+                  </motion.div>
                 </div>
                 
-                {/* Three principles in horizontal cards */}
+                {/* Three principles in horizontal cards - more interactive */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
                   {whoWeAre.principles.map((principle, idx) => (
                     <motion.div
@@ -159,13 +205,54 @@ const FeaturesSection: React.FC = () => {
                         hidden: { opacity: 0, y: 20 },
                         visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: idx * 0.1 } }
                       }}
-                      whileHover={{ y: -5 }}
+                      whileHover={{ scale: 1.05, y: -5 }}
+                      whileTap={{ scale: 0.98 }}
                       transition={{ duration: 0.2 }}
                     >
-                      <Card className="bg-slate-800/50 border-slate-700 h-full overflow-hidden relative">
+                      <Card className="bg-slate-800/50 border-slate-700 h-full overflow-hidden relative cursor-pointer group">
+                        {/* Animated gradient border */}
+                        <motion.div 
+                          className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                          style={{ 
+                            background: 'linear-gradient(45deg, rgba(59, 130, 246, 0.2) 0%, rgba(147, 51, 234, 0.2) 100%)',
+                          }}
+                        />
+                        
+                        {/* Animated particles on hover */}
+                        <AnimatePresence>
+                          {[...Array(3)].map((_, i) => (
+                            <motion.div
+                              key={`particle-${idx}-${i}`}
+                              className="absolute w-1 h-1 rounded-full bg-blue-400/70 hidden group-hover:block"
+                              initial={{ 
+                                x: '50%', 
+                                y: '100%', 
+                                opacity: 0.7 
+                              }}
+                              animate={{ 
+                                x: `${50 + (Math.random() * 40 - 20)}%`,
+                                y: `${20 + (Math.random() * 40)}%`,
+                                opacity: 0
+                              }}
+                              transition={{ 
+                                duration: 1 + Math.random(), 
+                                repeat: Infinity,
+                                repeatDelay: Math.random() * 0.5
+                              }}
+                            />
+                          ))}
+                        </AnimatePresence>
+                        
                         <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-600"></div>
-                        <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
-                          <p className="text-xl font-medium text-slate-200">{principle}</p>
+                        <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full relative z-10">
+                          <motion.div
+                            className="text-blue-400 mb-3 opacity-0 group-hover:opacity-100 transition-opacity duration-300"
+                            initial={{ y: 10 }}
+                            whileHover={{ y: 0 }}
+                          >
+                            <Sparkles size={20} />
+                          </motion.div>
+                          <p className="text-xl font-medium text-slate-200 group-hover:text-white transition-colors duration-300">{principle}</p>
                         </CardContent>
                       </Card>
                     </motion.div>
@@ -448,54 +535,116 @@ const FeaturesSection: React.FC = () => {
             <CardHeader className="text-center pb-2">
               <CardTitle className="text-3xl sm:text-4xl font-bold">
                 <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
-                  The Coact Method: Our Open Playbook
+                  The Coact Method
                 </span>
               </CardTitle>
               <CardDescription className="text-xl text-slate-300 max-w-3xl mx-auto mt-2">
-                We don't just build startups. We build systems that evolve.
+                We build systems that evolve, not just startups.
               </CardDescription>
             </CardHeader>
             
             <CardContent className="pt-4">
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
-                {coactMethod.map((method, index) => (
-                  <motion.div
-                    key={index}
-                    className="relative"
-                    variants={{
-                      hidden: { opacity: 0, y: 20 },
-                      visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: index * 0.1 } }
-                    }}
-                    whileHover={{ y: -5 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Card className="bg-slate-800/50 border-slate-700 h-full overflow-hidden relative">
-                      <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-600"></div>
-                      
-                      <CardHeader className="pb-2">
-                        <div className="flex items-center gap-3">
-                          <div className="p-2 rounded-lg bg-blue-500/10 text-blue-500">
-                            {method.icon}
-                          </div>
-                          <CardTitle className="text-lg">{method.title}</CardTitle>
-                        </div>
-                      </CardHeader>
-                      
-                      <CardContent className="pt-4">
-                        <p className="text-slate-300 mb-4">{method.description}</p>
-                        <div className="flex items-start gap-2 text-slate-400 mt-4 pt-4 border-t border-slate-700">
-                          <p>{method.content}</p>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    
-                    {index < coactMethod.length - 1 && (
-                      <div className="hidden md:block absolute -right-3 top-1/2 transform -translate-y-1/2 z-10">
-                        <ArrowRight className="text-blue-500" />
+              <div className="flex flex-col items-center justify-center mt-8 mb-12">
+                <div className="flex flex-wrap justify-center gap-4 mb-8">
+                  {coactMethod.map((method, index) => (
+                    <motion.button
+                      key={index}
+                      className={`px-4 py-2 rounded-full border ${activeMethodIndex === index ? 'bg-blue-500/20 border-blue-500/50 text-white' : 'bg-slate-800/50 border-slate-700 text-slate-300'} transition-all duration-300`}
+                      onClick={() => setActiveMethodIndex(index)}
+                      whileHover={{ scale: 1.05 }}
+                      whileTap={{ scale: 0.98 }}
+                    >
+                      <div className="flex items-center gap-2">
+                        <span className="text-blue-400">{method.icon}</span>
+                        <span>{method.title.split('.')[0]}</span>
                       </div>
+                    </motion.button>
+                  ))}
+                </div>
+                
+                <div className="w-full max-w-3xl mx-auto">
+                  <AnimatePresence mode="wait">
+                    {activeMethodIndex !== null && (
+                      <motion.div
+                        key={`method-${activeMethodIndex}`}
+                        initial={{ opacity: 0, y: 20 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        exit={{ opacity: 0, y: -20 }}
+                        transition={{ duration: 0.3 }}
+                        className="bg-slate-800/50 border border-slate-700 rounded-xl p-6 relative overflow-hidden"
+                      >
+                        {/* Animated background */}
+                        <motion.div 
+                          className="absolute inset-0 opacity-10"
+                          initial={{ backgroundPosition: "0% 0%" }}
+                          animate={{ backgroundPosition: "100% 100%" }}
+                          transition={{ duration: 20, repeat: Infinity, repeatType: "mirror" }}
+                          style={{
+                            backgroundImage: "radial-gradient(circle at center, rgba(59, 130, 246, 0.5) 0%, transparent 70%)",
+                            backgroundSize: "150% 150%"
+                          }}
+                        />
+                        
+                        <div className="flex items-start gap-4">
+                          <div className="p-3 rounded-lg bg-blue-500/10 text-blue-500 flex-shrink-0 mt-1">
+                            {coactMethod[activeMethodIndex].icon}
+                          </div>
+                          <div>
+                            <h3 className="text-xl font-bold text-white mb-3">
+                              {coactMethod[activeMethodIndex].title.split('.')[1]}
+                            </h3>
+                            <p className="text-slate-300 mb-4">{coactMethod[activeMethodIndex].description}</p>
+                            <div className="flex items-start gap-2 text-slate-400 mt-4 pt-4 border-t border-slate-700">
+                              <motion.div
+                                initial={{ x: -5, opacity: 0.5 }}
+                                animate={{ x: 0, opacity: 1 }}
+                                transition={{ duration: 0.5, repeat: Infinity, repeatType: "mirror" }}
+                              >
+                                <ArrowRight size={16} className="mt-1 flex-shrink-0 text-blue-500" />
+                              </motion.div>
+                              <p>{coactMethod[activeMethodIndex].content}</p>
+                            </div>
+                          </div>
+                        </div>
+                        
+                        {/* Animated particles */}
+                        {[...Array(5)].map((_, i) => (
+                          <motion.div
+                            key={`method-particle-${i}`}
+                            className="absolute w-1 h-1 rounded-full bg-blue-400/70"
+                            initial={{ 
+                              x: '50%', 
+                              y: '100%', 
+                              opacity: 0.7 
+                            }}
+                            animate={{ 
+                              x: `${Math.random() * 100}%`,
+                              y: `${Math.random() * 100}%`,
+                              opacity: 0
+                            }}
+                            transition={{ 
+                              duration: 1 + Math.random() * 2, 
+                              repeat: Infinity,
+                              repeatDelay: Math.random()
+                            }}
+                          />
+                        ))}
+                      </motion.div>
                     )}
-                  </motion.div>
-                ))}
+                  </AnimatePresence>
+                  
+                  {activeMethodIndex === null && (
+                    <motion.div 
+                      className="text-center text-slate-400 py-8"
+                      initial={{ opacity: 0 }}
+                      animate={{ opacity: 1 }}
+                      transition={{ delay: 0.3 }}
+                    >
+                      <MousePointerClick className="mx-auto mb-3 text-blue-500" />
+                      <p>Select a method above to explore our approach</p>
+                    </motion.div>
+                  )}
+                </div>
               </div>
               
               <div className="flex justify-center mt-8">
@@ -527,50 +676,136 @@ const FeaturesSection: React.FC = () => {
                 </span>
               </CardTitle>
               <CardDescription className="text-xl text-slate-300 max-w-3xl mx-auto mt-2">
-                Our ventures span across the essentials of life, work, and the future.
+                Ventures spanning life, work, and future essentials.
               </CardDescription>
             </CardHeader>
             
             <CardContent className="pt-4">
-              <p className="text-lg text-slate-300 max-w-3xl mx-auto text-center mb-8">
-                Every venture is designed to question the norm, push boundaries, and deliver measurable impact.
-              </p>
-              
               <div className="max-w-4xl mx-auto">
-                <h3 className="text-2xl font-bold mb-6 text-center text-slate-200">
-                  Sectors We're Exploring:
-                </h3>
-                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
-                  {sectors.map((sector, index) => (
-                    <motion.div
-                      key={index}
-                      className="relative overflow-hidden group"
-                      variants={{
-                        hidden: { opacity: 0, y: 20 },
-                        visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: index * 0.05 } }
+                <div className="flex flex-wrap justify-center gap-3 mb-8">
+                  <TooltipProvider>
+                    {sectors.map((sector, index) => (
+                      <Tooltip key={index}>
+                        <TooltipTrigger asChild>
+                          <motion.button
+                            className={`px-4 py-2 rounded-full border ${activeSector === sector ? 'bg-blue-500/20 border-blue-500/50 text-white' : 'bg-slate-800/50 border-slate-700 text-slate-300'} transition-all duration-300`}
+                            onClick={() => setActiveSector(activeSector === sector ? null : sector)}
+                            whileHover={{ scale: 1.05 }}
+                            whileTap={{ scale: 0.98 }}
+                          >
+                            {sector}
+                          </motion.button>
+                        </TooltipTrigger>
+                        <TooltipContent side="top" className="bg-slate-900 border-slate-700 text-slate-200">
+                          <p>Click to explore {sector}</p>
+                        </TooltipContent>
+                      </Tooltip>
+                    ))}
+                  </TooltipProvider>
+                </div>
+                
+                <div className="relative h-64 w-full bg-slate-800/30 rounded-xl border border-slate-700 overflow-hidden mb-8">
+                  {/* Interactive sector visualization */}
+                  <div className="absolute inset-0">
+                    <motion.div 
+                      className="absolute inset-0"
+                      initial={{ backgroundPosition: "0% 0%" }}
+                      animate={{ backgroundPosition: "100% 100%" }}
+                      transition={{ duration: 20, repeat: Infinity, repeatType: "mirror" }}
+                      style={{
+                        backgroundImage: "radial-gradient(circle at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%)",
+                        backgroundSize: "150% 150%"
                       }}
-                      whileHover={{ y: -5 }}
-                      transition={{ duration: 0.2 }}
-                    >
-                      <Card className="h-full bg-slate-800/50 border-slate-700 overflow-hidden">
-                        <div className="absolute inset-0 bg-gradient-to-br from-blue-600/20 to-purple-600/20 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
-                        <div className="absolute bottom-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-600 transform scale-x-0 group-hover:scale-x-100 transition-transform duration-300 origin-left"></div>
-                        
-                        <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
-                          <Badge variant="outline" className="mb-2 bg-slate-900/50 border-slate-600">
-                            Sector
-                          </Badge>
-                          <p className="text-lg font-medium text-slate-200">{sector}</p>
-                        </CardContent>
-                      </Card>
-                    </motion.div>
-                  ))}
+                    />
+                    
+                    {/* Animated particles */}
+                    {[...Array(15)].map((_, i) => (
+                      <motion.div
+                        key={`sector-particle-${i}`}
+                        className="absolute w-1 h-1 rounded-full bg-blue-400/50"
+                        initial={{ 
+                          x: Math.random() * 100 + '%', 
+                          y: Math.random() * 100 + '%', 
+                          opacity: 0.5 
+                        }}
+                        animate={{ 
+                          x: Math.random() * 100 + '%',
+                          y: Math.random() * 100 + '%',
+                          opacity: [0.2, 0.5, 0.2]
+                        }}
+                        transition={{ 
+                          duration: 5 + Math.random() * 10, 
+                          repeat: Infinity,
+                          repeatType: "mirror"
+                        }}
+                      />
+                    ))}
+                  </div>
+                  
+                  <AnimatePresence mode="wait">
+                    {activeSector ? (
+                      <motion.div 
+                        key={activeSector}
+                        className="absolute inset-0 flex items-center justify-center p-6"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.3 }}
+                      >
+                        <div className="text-center max-w-lg">
+                          <motion.div 
+                            className="inline-block mb-4 p-2 rounded-full bg-blue-500/10 text-blue-400"
+                            initial={{ scale: 0 }}
+                            animate={{ scale: 1, rotate: [0, 10, 0] }}
+                            transition={{ duration: 0.5, delay: 0.1 }}
+                          >
+                            <Sparkles size={24} />
+                          </motion.div>
+                          <motion.h3 
+                            className="text-2xl font-bold text-white mb-3"
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ duration: 0.3, delay: 0.2 }}
+                          >
+                            {activeSector}
+                          </motion.h3>
+                          <motion.p 
+                            className="text-slate-300"
+                            initial={{ y: 20, opacity: 0 }}
+                            animate={{ y: 0, opacity: 1 }}
+                            transition={{ duration: 0.3, delay: 0.3 }}
+                          >
+                            Ventures in this sector are designed to question the norm, push boundaries, and deliver measurable impact.
+                          </motion.p>
+                        </div>
+                      </motion.div>
+                    ) : (
+                      <motion.div 
+                        className="absolute inset-0 flex items-center justify-center"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                      >
+                        <div className="text-center">
+                          <MousePointerClick className="mx-auto mb-3 text-blue-500" size={24} />
+                          <p className="text-slate-300">Select a sector above to explore</p>
+                        </div>
+                      </motion.div>
+                    )}
+                  </AnimatePresence>
+                </div>
+                
+                <div className="flex justify-center">
+                  <motion.div 
+                    className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/70 border border-slate-700 text-sm text-slate-300"
+                    whileHover={{ scale: 1.05 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+                    Each venture is a living experiment—built to evolve and scale
+                  </motion.div>
                 </div>
               </div>
-              
-              <p className="text-xl text-slate-300 max-w-3xl mx-auto text-center mt-12 mb-8">
-                Each venture is a living experiment—systematically designed, continuously improved, built to scale.
-              </p>
             </CardContent>
           </Card>
           
@@ -585,29 +820,114 @@ const FeaturesSection: React.FC = () => {
             <LogoSlider />
           </motion.div>
 
-          {/* Closing Section */}
+          {/* Closing Section - More Interactive */}
           <motion.div
-            className="mt-16 text-center bg-slate-900/70 backdrop-blur-sm border border-slate-800 rounded-xl p-8"
+            className="mt-16 text-center bg-slate-900/70 backdrop-blur-sm border border-slate-800 rounded-xl p-8 relative overflow-hidden"
             variants={{
               hidden: { opacity: 0, y: 20 },
               visible: { opacity: 1, y: 0, transition: { duration: 0.6 } }
             }}
+            whileHover={{ boxShadow: "0 0 30px rgba(59, 130, 246, 0.2)" }}
           >
-            <h3 className="text-2xl font-bold mb-4 text-slate-200">
-              A World in Motion, Built by the Curious
-            </h3>
-            <div className="max-w-2xl mx-auto space-y-4">
-              <p className="text-lg text-slate-300">We build. We explore. We challenge.</p>
-              <p className="text-lg text-slate-300">Always with purpose. Always for progress.</p>
-              <p className="text-lg text-slate-300 mb-6">Join us as we shape what's next.</p>
+            {/* Animated background */}
+            <motion.div 
+              className="absolute inset-0 opacity-10"
+              initial={{ backgroundPosition: "0% 0%" }}
+              animate={{ backgroundPosition: "100% 100%" }}
+              transition={{ duration: 15, repeat: Infinity, repeatType: "mirror" }}
+              style={{
+                backgroundImage: "radial-gradient(circle at center, rgba(59, 130, 246, 0.5) 0%, transparent 70%)",
+                backgroundSize: "150% 150%"
+              }}
+            />
+            
+            {/* Animated particles */}
+            {[...Array(8)].map((_, i) => (
+              <motion.div
+                key={`closing-particle-${i}`}
+                className="absolute w-1 h-1 rounded-full bg-blue-400/50"
+                initial={{ 
+                  x: Math.random() * 100 + '%', 
+                  y: Math.random() * 100 + '%', 
+                  opacity: 0.5 
+                }}
+                animate={{ 
+                  x: Math.random() * 100 + '%',
+                  y: Math.random() * 100 + '%',
+                  opacity: [0.2, 0.5, 0.2]
+                }}
+                transition={{ 
+                  duration: 5 + Math.random() * 10, 
+                  repeat: Infinity,
+                  repeatType: "mirror"
+                }}
+              />
+            ))}
+            
+            <motion.div
+              initial={{ scale: 0.95 }}
+              whileInView={{ scale: 1 }}
+              transition={{ duration: 0.5 }}
+              className="relative z-10"
+            >
+              <motion.div 
+                className="inline-block mb-4 p-2 rounded-full bg-blue-500/10 text-blue-400"
+                initial={{ rotate: 0 }}
+                animate={{ rotate: [0, 5, 0, -5, 0] }}
+                transition={{ duration: 5, repeat: Infinity }}
+              >
+                <Sparkles size={28} />
+              </motion.div>
               
-              <div className="pt-4 border-t border-slate-800">
-                <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-slate-800/70 border border-slate-700 text-sm text-slate-300">
-                  <span className="w-2 h-2 rounded-full bg-blue-500"></span>
+              <h3 className="text-2xl font-bold mb-6 text-slate-200">
+                A World in Motion, Built by the Curious
+              </h3>
+              
+              <div className="max-w-2xl mx-auto flex flex-col items-center gap-3">
+                <motion.div 
+                  className="flex items-center gap-2 px-5 py-2 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 cursor-pointer"
+                  whileHover={{ scale: 1.05, backgroundColor: "rgba(59, 130, 246, 0.1)" }}
+                  whileTap={{ scale: 0.98 }}
+                >
+                  <span className="text-blue-400">
+                    <Rocket size={16} />
+                  </span>
+                  <span>We build. We explore. We challenge.</span>
+                </motion.div>
+                
+                <motion.div 
+                  className="flex items-center gap-2 px-5 py-2 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 cursor-pointer"
+                  whileHover={{ scale: 1.05, backgroundColor: "rgba(59, 130, 246, 0.1)" }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ delay: 0.1 }}
+                >
+                  <span className="text-purple-400">
+                    <LightbulbIcon size={16} />
+                  </span>
+                  <span>Always with purpose. Always for progress.</span>
+                </motion.div>
+                
+                <motion.div 
+                  className="flex items-center gap-2 px-5 py-2 rounded-full bg-slate-800/80 border border-slate-700 text-slate-300 cursor-pointer mb-6"
+                  whileHover={{ scale: 1.05, backgroundColor: "rgba(59, 130, 246, 0.1)" }}
+                  whileTap={{ scale: 0.98 }}
+                  transition={{ delay: 0.2 }}
+                >
+                  <span className="text-blue-400">
+                    <ArrowRight size={16} />
+                  </span>
+                  <span>Join us as we shape what's next.</span>
+                </motion.div>
+                
+                <motion.div 
+                  className="mt-4 inline-flex items-center gap-2 px-6 py-3 rounded-full bg-gradient-to-r from-blue-600/80 to-purple-600/80 text-white font-medium cursor-pointer"
+                  whileHover={{ scale: 1.05, boxShadow: "0 0 15px rgba(59, 130, 246, 0.5)" }}
+                  whileTap={{ scale: 0.98 }}
+                >
                   Building tomorrow's ventures today
-                </div>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           </motion.div>
         </motion.div>
       </motion.div>
