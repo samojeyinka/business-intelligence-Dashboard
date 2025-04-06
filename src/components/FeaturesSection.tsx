@@ -136,14 +136,31 @@ const FeaturesSection: React.FC = () => {
             </CardHeader>
             
             <CardContent className="pt-4">
-              <div className="max-w-3xl mx-auto space-y-4 relative z-10">
+              <div className="max-w-4xl mx-auto space-y-6 relative z-10">
                 {whoWeAre.content.map((paragraph, idx) => (
-                  <div key={idx} className="flex items-start gap-3">
-                    <div className="h-6 w-6 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0 mt-1">
-                      <span className="text-white text-xs font-bold">{idx + 1}</span>
-                    </div>
-                    <p className="text-lg text-slate-300">{paragraph}</p>
-                  </div>
+                  <motion.div 
+                    key={idx}
+                    className="relative"
+                    whileHover={{ y: -5 }}
+                    transition={{ duration: 0.2 }}
+                  >
+                    <Card className="bg-slate-800/60 border-slate-700 overflow-hidden relative">
+                      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-600"></div>
+                      <CardContent className="p-5 pl-6">
+                        <div className="flex items-center gap-4">
+                          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
+                            <span className="text-white text-sm font-bold">{idx + 1}</span>
+                          </div>
+                          <div className="flex-1">
+                            <p className="text-lg text-slate-200">{paragraph}</p>
+                          </div>
+                        </div>
+                      </CardContent>
+                      {idx < whoWeAre.content.length - 1 && (
+                        <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
+                      )}
+                    </Card>
+                  </motion.div>
                 ))}
               </div>
             </CardContent>
