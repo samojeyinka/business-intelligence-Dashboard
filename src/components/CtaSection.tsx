@@ -61,11 +61,11 @@ const CtaSection: React.FC = () => {
           >
             <h2 className="text-3xl sm:text-4xl font-bold mb-4">
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
-                Join the Future of Web Experience
+                Join Our Ecosystem
               </span>
             </h2>
             <p className="text-xl text-slate-300">
-              Be the first to experience our adaptive, immersive web environments.
+              Connect with us to explore opportunities for collaboration, investment, or venture building.
             </p>
           </motion.div>
           
@@ -91,7 +91,7 @@ const CtaSection: React.FC = () => {
                   type="submit"
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8"
                 >
-                  Get Early Access
+                  Join Our Network
                 </Button>
               </>
             ) : (

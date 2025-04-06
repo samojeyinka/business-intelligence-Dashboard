@@ -50,9 +50,9 @@ const HeroSection: React.FC = () => {
           transition={{ duration: 0.5 }}
         >
           <span className="block bg-clip-text text-transparent bg-gradient-to-r from-blue-500 to-purple-600">
-            The Future of Web
+            Building Tomorrow's Ventures
           </span>
-          <span className="block mt-1">Is Alive & Adaptive</span>
+          <span className="block mt-1">Today</span>
         </motion.h1>
         
         <motion.p 
@@ -61,8 +61,8 @@ const HeroSection: React.FC = () => {
           animate={{ y: 0, opacity: 1 }}
           transition={{ duration: 0.5, delay: 0.2 }}
         >
-          We're creating living, immersive web environments that adapt and evolve in real-time, 
-          responding to your every interaction to deliver experiences beyond the conventional.
+          A collaborative ecosystem for founders, investors, operators, and advisors, 
+          dedicated to purposeful innovation and impactful ventures.
         </motion.p>
         
         <motion.div
@@ -75,14 +75,14 @@ const HeroSection: React.FC = () => {
             size="lg"
             className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8"
           >
-            Explore Ventures
+            Explore Our Ecosystem
           </Button>
           <Button 
             size="lg"
             variant="outline"
             className="border-slate-600 hover:bg-slate-800/50"
           >
-            Our Approach
+            The Coact Method
           </Button>
         </motion.div>
       </div>

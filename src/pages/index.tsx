@@ -19,8 +19,8 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Coact Venture Studio | The Future of Web Experience</title>
-        <meta name="description" content="Coact Venture Studio creates adaptive, immersive web environments that evolve in real-time, responding to your every interaction." />
+        <title>Coact Venture Studio | Building Tomorrow's Ventures Today</title>
+        <meta name="description" content="A collaborative ecosystem for founders, investors, operators, and advisors, dedicated to purposeful innovation and impactful ventures." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
