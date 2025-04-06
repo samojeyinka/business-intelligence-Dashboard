@@ -6,12 +6,11 @@ interface LogoSliderProps {
 }
 
 const defaultLogos = [
-  { src: '/images/portfolio/logo1.png', alt: 'Portfolio Company 1', url: undefined },
-  { src: '/images/portfolio/logo2.png', alt: 'Portfolio Company 2', url: undefined },
-  { src: '/images/portfolio/logo3.png', alt: 'Portfolio Company 3', url: undefined },
-  { src: '/images/portfolio/logo4.png', alt: 'Portfolio Company 4', url: undefined },
-  { src: '/images/portfolio/logo5.png', alt: 'Portfolio Company 5', url: undefined },
-  { src: '/images/portfolio/logo6.png', alt: 'Portfolio Company 6', url: undefined },
+  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/21-a8e8399.png', alt: 'Portfolio Company 1', url: undefined },
+  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/22-07621d6.png', alt: 'Portfolio Company 2', url: undefined },
+  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/23-6718f83.png', alt: 'Portfolio Company 3', url: undefined },
+  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/24-3612c33.png', alt: 'Portfolio Company 4', url: undefined },
+  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/25-9158539.png', alt: 'Portfolio Company 5', url: undefined },
 ];
 
 const LogoSlider: React.FC<LogoSliderProps> = ({ logos = defaultLogos }) => {
@@ -51,14 +50,18 @@ const LogoSlider: React.FC<LogoSliderProps> = ({ logos = defaultLogos }) => {
                   rel="noopener noreferrer"
                   className="w-full h-full flex items-center justify-center"
                 >
-                  <div className="w-24 h-12 bg-slate-700/50 rounded flex items-center justify-center text-xs text-slate-400 group-hover:text-white transition-colors">
-                    {logo.alt}
-                  </div>
+                  <img 
+                    src={logo.src} 
+                    alt={logo.alt} 
+                    className="max-w-[80%] max-h-[80%] object-contain filter brightness-90 group-hover:brightness-100 transition-all"
+                  />
                 </a>
               ) : (
-                <div className="w-24 h-12 bg-slate-700/50 rounded flex items-center justify-center text-xs text-slate-400 group-hover:text-white transition-colors">
-                  {logo.alt}
-                </div>
+                <img 
+                  src={logo.src} 
+                  alt={logo.alt} 
+                  className="max-w-[80%] max-h-[80%] object-contain filter brightness-90 group-hover:brightness-100 transition-all"
+                />
               )}
             </div>
           ))}
@@ -91,23 +94,25 @@ const LogoSlider: React.FC<LogoSliderProps> = ({ logos = defaultLogos }) => {
                   rel="noopener noreferrer"
                   className="w-full h-full flex items-center justify-center"
                 >
-                  <div className="w-24 h-12 bg-slate-700/50 rounded flex items-center justify-center text-xs text-slate-400 group-hover:text-white transition-colors">
-                    {logo.alt}
-                  </div>
+                  <img 
+                    src={logo.src} 
+                    alt={logo.alt} 
+                    className="max-w-[80%] max-h-[80%] object-contain filter brightness-90 group-hover:brightness-100 transition-all"
+                  />
                 </a>
               ) : (
-                <div className="w-24 h-12 bg-slate-700/50 rounded flex items-center justify-center text-xs text-slate-400 group-hover:text-white transition-colors">
-                  {logo.alt}
-                </div>
+                <img 
+                  src={logo.src} 
+                  alt={logo.alt} 
+                  className="max-w-[80%] max-h-[80%] object-contain filter brightness-90 group-hover:brightness-100 transition-all"
+                />
               )}
             </div>
           ))}
         </motion.div>
       </div>
       
-      <div className="text-center mt-6 text-sm text-slate-400">
-        <p>Note: Replace placeholder logos with your actual portfolio company logos</p>
-      </div>
+      {/* Portfolio logos are now displayed */}
     </div>
   );
 };
