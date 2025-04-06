@@ -21,10 +21,12 @@ const FeaturesSection: React.FC = () => {
   // Who We Are section
   const whoWeAre = {
     title: "Who We Are",
-    description: "Coact is a venture studio for the builders, the thinkers, and the quietly rebellious.",
-    content: [
+    mainDescription: "Coact is a venture studio for the builders, the thinkers, and the quietly rebellious.",
+    mission: [
       "We question what is and imagine what could be. Our mission is simple:",
-      "Build what people truly need to thrive today—while designing for the future we believe in.",
+      "Build what people truly need to thrive today—while designing for the future we believe in."
+    ],
+    principles: [
       "We operate at the edge of what's possible.",
       "We explore deeply.",
       "We build deliberately."
@@ -130,38 +132,45 @@ const FeaturesSection: React.FC = () => {
                   {whoWeAre.title}
                 </span>
               </CardTitle>
-              <CardDescription className="text-xl text-slate-300 max-w-3xl mx-auto mt-2">
-                {whoWeAre.description}
-              </CardDescription>
             </CardHeader>
             
             <CardContent className="pt-4">
-              <div className="max-w-4xl mx-auto space-y-6 relative z-10">
-                {whoWeAre.content.map((paragraph, idx) => (
-                  <motion.div 
-                    key={idx}
-                    className="relative"
-                    whileHover={{ y: -5 }}
-                    transition={{ duration: 0.2 }}
-                  >
-                    <Card className="bg-slate-800/60 border-slate-700 overflow-hidden relative">
-                      <div className="absolute top-0 left-0 w-1 h-full bg-gradient-to-b from-blue-500 to-purple-600"></div>
-                      <CardContent className="p-5 pl-6">
-                        <div className="flex items-center gap-4">
-                          <div className="h-10 w-10 rounded-full bg-gradient-to-r from-blue-500 to-purple-600 flex items-center justify-center flex-shrink-0">
-                            <span className="text-white text-sm font-bold">{idx + 1}</span>
-                          </div>
-                          <div className="flex-1">
-                            <p className="text-lg text-slate-200">{paragraph}</p>
-                          </div>
-                        </div>
-                      </CardContent>
-                      {idx < whoWeAre.content.length - 1 && (
-                        <div className="absolute bottom-0 left-6 right-6 h-px bg-gradient-to-r from-transparent via-slate-700 to-transparent"></div>
-                      )}
-                    </Card>
-                  </motion.div>
-                ))}
+              <div className="max-w-4xl mx-auto relative z-10">
+                {/* Main description - bolder and larger */}
+                <h2 className="text-2xl sm:text-3xl font-bold text-white text-center mb-6">
+                  {whoWeAre.mainDescription}
+                </h2>
+                
+                {/* Mission statement - smaller regular text */}
+                <div className="text-center mb-12">
+                  <p className="text-slate-300 max-w-3xl mx-auto">
+                    {whoWeAre.mission[0]}<br/>
+                    {whoWeAre.mission[1]}
+                  </p>
+                </div>
+                
+                {/* Three principles in horizontal cards */}
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mt-8">
+                  {whoWeAre.principles.map((principle, idx) => (
+                    <motion.div
+                      key={idx}
+                      className="relative"
+                      variants={{
+                        hidden: { opacity: 0, y: 20 },
+                        visible: { opacity: 1, y: 0, transition: { duration: 0.5, delay: idx * 0.1 } }
+                      }}
+                      whileHover={{ y: -5 }}
+                      transition={{ duration: 0.2 }}
+                    >
+                      <Card className="bg-slate-800/50 border-slate-700 h-full overflow-hidden relative">
+                        <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-blue-500 to-purple-600"></div>
+                        <CardContent className="p-6 flex flex-col items-center justify-center text-center h-full">
+                          <p className="text-xl font-medium text-slate-200">{principle}</p>
+                        </CardContent>
+                      </Card>
+                    </motion.div>
+                  ))}
+                </div>
               </div>
             </CardContent>
           </Card>
