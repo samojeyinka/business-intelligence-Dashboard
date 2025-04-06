@@ -3,6 +3,7 @@ import Head from "next/head";
 import Header from "@/components/Header";
 import HeroSection from "@/components/HeroSection";
 import FeaturesSection from "@/components/FeaturesSection";
+import VenturesSection from "@/components/VenturesSection";
 import CtaSection from "@/components/CtaSection";
 import InteractiveBackground from "@/components/InteractiveBackground";
 import DynamicCursor from "@/components/DynamicCursor";
@@ -42,6 +43,9 @@ export default function Home() {
           
           {/* Features section */}
           <FeaturesSection />
+          
+          {/* Ventures section */}
+          <VenturesSection />
           
           {/* CTA section */}
           <CtaSection />
