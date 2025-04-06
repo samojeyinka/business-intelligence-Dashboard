@@ -7,12 +7,17 @@ import { Card } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
 import { ChevronUp, ChevronDown, Search, Filter, ArrowUpRight, Star, Users, Clock, Sparkles } from 'lucide-react';
 import Header from '@/components/Header';
-import InteractiveBackground from '@/components/InteractiveBackground';
+import DynamicCursor from '@/components/DynamicCursor';
+import VentureParticleEffect from '@/components/VentureParticleEffect';
+import VentureCard3D from '@/components/VentureCard3D';
+import FuturisticSearch from '@/components/FuturisticSearch';
+import FuturisticTabs from '@/components/FuturisticTabs';
+import FloatingElements from '@/components/FloatingElements';
+import Nova from '@/components/Nova';
 
 const stageColors: Record<VentureStage, string> = {
   IDEA: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
@@ -167,14 +172,28 @@ const VenturesPage = () => {
   const [searchTerm, setSearchTerm] = useState('');
   const [activeStage, setActiveStage] = useState<string>('all');
   const [sortBy, setSortBy] = useState('upvotes');
-  const [showFilters, setShowFilters] = useState(false);
   const [selectedSector, setSelectedSector] = useState<string>('');
+  const [isMounted, setIsMounted] = useState(false);
   const [pagination, setPagination] = useState({
     total: 0,
     pages: 0,
     current: 1,
     limit: 10,
   });
+  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+
+  // Track mouse position for parallax effects
+  const handleMouseMove = (e: React.MouseEvent) => {
+    const { clientX, clientY } = e;
+    const x = (clientX / window.innerWidth) - 0.5;
+    const y = (clientY / window.innerHeight) - 0.5;
+    setMousePosition({ x, y });
+  };
+
+  // Client-side only components
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
 
   // Fetch ventures with filters
   const loadVentures = async () => {
@@ -214,10 +233,17 @@ const VenturesPage = () => {
   }, [activeStage, sortBy, pagination.current, selectedSector]);
 
   // Handle search
-  const handleSearch = (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleSearch = (term: string) => {
+    setSearchTerm(term);
     setPagination(prev => ({ ...prev, current: 1 }));
     loadVentures();
+  };
+
+  // Handle filter changes
+  const handleFilterChange = (filters: { sector: string; sortBy: string }) => {
+    setSelectedSector(filters.sector);
+    setSortBy(filters.sortBy);
+    setPagination(prev => ({ ...prev, current: 1 }));
   };
 
   // Available sectors (in a real app, these would come from the database)
@@ -234,183 +260,185 @@ const VenturesPage = () => {
   ];
 
   return (
-    <div className="min-h-screen bg-black text-white">
-      <InteractiveBackground />
+    <div className="min-h-screen bg-black text-white overflow-hidden" onMouseMove={handleMouseMove}>
+      {/* Interactive background */}
+      <VentureParticleEffect />
+      
+      {/* Floating elements */}
+      <FloatingElements count={12} />
+      
+      {/* Dynamic cursor (client-side only) */}
+      {isMounted && <DynamicCursor />}
+      
       <Header />
       
-      <main className="container mx-auto px-4 py-16">
-        <div className="relative z-10">
+      <main className="container mx-auto px-4 py-16 relative z-10">
+        {/* Hero section */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.8 }}
+          className="mb-16 text-center relative"
+        >
           <motion.div
-            initial={{ opacity: 0, y: -20 }}
-            animate={{ opacity: 1, y: 0 }}
+            animate={{
+              x: mousePosition.x * -20,
+              y: mousePosition.y * -20,
+            }}
+            transition={{ type: 'spring', damping: 25 }}
+            className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br from-purple-900/20 via-blue-900/10 to-transparent rounded-full blur-3xl pointer-events-none"
+          />
+          
+          <motion.h1 
+            className="text-6xl sm:text-7xl font-bold mb-6 relative"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
             transition={{ duration: 0.5 }}
-            className="mb-12 text-center"
           >
-            <h1 className="text-5xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-amber-500">
-              Discover the Future
-            </h1>
-            <p className="mt-4 text-xl text-zinc-400">
-              Explore cutting-edge ventures and innovations shaping tomorrow's world
-            </p>
-          </motion.div>
+            <span className="bg-clip-text text-transparent bg-gradient-to-r from-purple-400 via-pink-500 to-amber-500 inline-block">
+              Discover
+            </span>
+            <br />
+            <motion.span 
+              className="inline-block relative"
+              animate={{
+                x: mousePosition.x * 10,
+                y: mousePosition.y * 10,
+              }}
+              transition={{ type: 'spring', damping: 25 }}
+            >
+              the Future
+            </motion.span>
+          </motion.h1>
+          
+          <motion.p 
+            className="mt-4 text-xl text-zinc-400 max-w-2xl mx-auto"
+            initial={{ y: 20, opacity: 0 }}
+            animate={{ y: 0, opacity: 1 }}
+            transition={{ duration: 0.5, delay: 0.2 }}
+          >
+            Explore cutting-edge ventures and innovations shaping tomorrow's world
+          </motion.p>
+        </motion.div>
 
-          {/* Search and filters */}
-          <div className="mb-8">
-            <form onSubmit={handleSearch} className="flex gap-2">
-              <div className="relative flex-1">
-                <Search className="absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-zinc-500" />
-                <Input
-                  type="text"
-                  placeholder="Search ventures..."
-                  className="pl-10 bg-zinc-900/50 border-zinc-800 focus:border-purple-500"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                />
-              </div>
-              <Button type="submit" variant="default" className="bg-purple-600 hover:bg-purple-700">
-                Search
-              </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="border-zinc-700 text-zinc-400"
-                onClick={() => setShowFilters(!showFilters)}
-              >
-                <Filter className="h-4 w-4 mr-2" />
-                Filters
-                {showFilters ? (
-                  <ChevronUp className="ml-2 h-4 w-4" />
-                ) : (
-                  <ChevronDown className="ml-2 h-4 w-4" />
-                )}
-              </Button>
-            </form>
+        {/* Search and filters */}
+        <FuturisticSearch 
+          onSearch={handleSearch}
+          onFilterChange={handleFilterChange}
+          sectors={sectors}
+        />
 
-            {/* Expandable filters */}
-            <AnimatePresence>
-              {showFilters && (
-                <motion.div
-                  initial={{ height: 0, opacity: 0 }}
-                  animate={{ height: 'auto', opacity: 1 }}
-                  exit={{ height: 0, opacity: 0 }}
-                  transition={{ duration: 0.3 }}
-                  className="overflow-hidden"
-                >
-                  <div className="mt-4 grid grid-cols-1 md:grid-cols-3 gap-4 p-4 bg-zinc-900/50 rounded-lg border border-zinc-800">
-                    <div>
-                      <label className="text-sm text-zinc-400 mb-2 block">Sector</label>
-                      <Select value={selectedSector} onValueChange={setSelectedSector}>
-                        <SelectTrigger className="bg-zinc-800 border-zinc-700">
-                          <SelectValue placeholder="All Sectors" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="">All Sectors</SelectItem>
-                          {sectors.map((sector) => (
-                            <SelectItem key={sector} value={sector}>
-                              {sector}
-                            </SelectItem>
-                          ))}
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div>
-                      <label className="text-sm text-zinc-400 mb-2 block">Sort By</label>
-                      <Select value={sortBy} onValueChange={setSortBy}>
-                        <SelectTrigger className="bg-zinc-800 border-zinc-700">
-                          <SelectValue placeholder="Sort by" />
-                        </SelectTrigger>
-                        <SelectContent>
-                          <SelectItem value="upvotes">Most Upvoted</SelectItem>
-                          <SelectItem value="recent">Most Recent</SelectItem>
-                        </SelectContent>
-                      </Select>
-                    </div>
-                    
-                    <div className="flex items-end">
-                      <Button 
-                        variant="outline" 
-                        className="w-full border-zinc-700 text-zinc-400"
-                        onClick={() => {
-                          setSearchTerm('');
-                          setActiveStage('all');
-                          setSortBy('upvotes');
-                          setSelectedSector('');
-                          setPagination(prev => ({ ...prev, current: 1 }));
-                        }}
-                      >
-                        Reset Filters
-                      </Button>
-                    </div>
-                  </div>
-                </motion.div>
-              )}
-            </AnimatePresence>
-          </div>
+        {/* Stage tabs */}
+        <FuturisticTabs 
+          activeStage={activeStage}
+          onStageChange={setActiveStage}
+        />
 
-          {/* Stage tabs */}
-          <Tabs defaultValue="all" value={activeStage} onValueChange={setActiveStage} className="mb-8">
-            <TabsList className="bg-zinc-900/50 border border-zinc-800 p-1">
-              <TabsTrigger value="all" className="data-[state=active]:bg-purple-600">
-                All Stages
-              </TabsTrigger>
-              <TabsTrigger value="IDEA" className="data-[state=active]:bg-purple-600">
-                Idea
-              </TabsTrigger>
-              <TabsTrigger value="PROTOTYPE" className="data-[state=active]:bg-purple-600">
-                Prototype
-              </TabsTrigger>
-              <TabsTrigger value="MVP" className="data-[state=active]:bg-purple-600">
-                MVP
-              </TabsTrigger>
-              <TabsTrigger value="GROWTH" className="data-[state=active]:bg-purple-600">
-                Growth
-              </TabsTrigger>
-              <TabsTrigger value="SCALE" className="data-[state=active]:bg-purple-600">
-                Scale
-              </TabsTrigger>
-            </TabsList>
-          </Tabs>
-
-          {/* Ventures grid */}
+        {/* Ventures grid */}
+        <motion.div
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ duration: 0.5 }}
+          className="relative z-10"
+        >
           {loading ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <Card key={i} className="border border-zinc-800 bg-zinc-900/50 h-64 animate-pulse">
-                  <div className="h-full flex items-center justify-center">
-                    <div className="h-8 w-8 rounded-full bg-zinc-800 animate-spin" />
-                  </div>
-                </Card>
+                <motion.div 
+                  key={i}
+                  initial={{ opacity: 0, y: 20 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.3, delay: i * 0.1 }}
+                >
+                  <Card className="border border-zinc-800 bg-zinc-900/50 h-64 overflow-hidden relative">
+                    <div className="h-full flex items-center justify-center">
+                      <div className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 animate-spin" />
+                    </div>
+                    
+                    {/* Animated gradient border */}
+                    <div 
+                      className="absolute inset-0 rounded-lg opacity-30"
+                      style={{
+                        background: 'linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent)',
+                        backgroundSize: '200% 100%',
+                        animation: 'shimmer 2s infinite',
+                      }}
+                    />
+                  </Card>
+                </motion.div>
               ))}
             </div>
           ) : ventures.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              <AnimatePresence>
-                {ventures.map((venture) => (
-                  <VentureCard key={venture.id} venture={venture} />
+              <AnimatePresence mode="wait">
+                {ventures.map((venture, index) => (
+                  <VentureCard3D key={venture.id} venture={venture} index={index} />
                 ))}
               </AnimatePresence>
             </div>
           ) : (
-            <div className="text-center py-16">
-              <h3 className="text-xl font-semibold text-zinc-400">No ventures found</h3>
-              <p className="mt-2 text-zinc-500">Try adjusting your filters or search terms</p>
-            </div>
+            <motion.div 
+              className="text-center py-16 relative"
+              initial={{ opacity: 0, scale: 0.9 }}
+              animate={{ opacity: 1, scale: 1 }}
+              transition={{ duration: 0.5, type: 'spring' }}
+            >
+              <motion.div 
+                className="absolute inset-0 bg-gradient-to-r from-purple-900/10 via-transparent to-blue-900/10 rounded-lg"
+                animate={{
+                  opacity: [0.5, 0.8, 0.5],
+                }}
+                transition={{ duration: 4, repeat: Infinity }}
+              />
+              
+              <h3 className="text-2xl font-semibold text-zinc-300">No ventures found</h3>
+              <p className="mt-2 text-zinc-400">
+                Try adjusting your filters or search terms
+              </p>
+              
+              <motion.div 
+                className="mt-6 inline-block"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button 
+                  variant="outline" 
+                  className="border-purple-500/30 text-purple-400 hover:bg-purple-500/10"
+                  onClick={() => {
+                    setSearchTerm('');
+                    setActiveStage('all');
+                    setSortBy('upvotes');
+                    setSelectedSector('');
+                    setPagination(prev => ({ ...prev, current: 1 }));
+                    loadVentures();
+                  }}
+                >
+                  Reset All Filters
+                </Button>
+              </motion.div>
+            </motion.div>
           )}
 
           {/* Pagination */}
           {pagination.pages > 1 && (
-            <div className="mt-8 flex justify-center">
+            <motion.div 
+              className="mt-12 flex justify-center"
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5, delay: 0.2 }}
+            >
               <div className="flex items-center space-x-2">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPagination(prev => ({ ...prev, current: Math.max(1, prev.current - 1) }))}
-                  disabled={pagination.current === 1}
-                  className="border-zinc-700 text-zinc-400"
-                >
-                  Previous
-                </Button>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPagination(prev => ({ ...prev, current: Math.max(1, prev.current - 1) }))}
+                    disabled={pagination.current === 1}
+                    className="border-zinc-700 text-zinc-400 hover:border-purple-500/50 hover:text-purple-400 transition-colors duration-300"
+                  >
+                    Previous
+                  </Button>
+                </motion.div>
                 
                 <div className="flex items-center space-x-1">
                   {[...Array(pagination.pages)].map((_, i) => {
@@ -424,15 +452,18 @@ const VenturesPage = () => {
                       (page >= pagination.current - 1 && page <= pagination.current + 1)
                     ) {
                       return (
-                        <Button
-                          key={page}
-                          variant={isActive ? "default" : "outline"}
-                          size="sm"
-                          onClick={() => setPagination(prev => ({ ...prev, current: page }))}
-                          className={isActive ? "bg-purple-600 hover:bg-purple-700" : "border-zinc-700 text-zinc-400"}
-                        >
-                          {page}
-                        </Button>
+                        <motion.div key={page} whileHover={{ scale: 1.1 }} whileTap={{ scale: 0.9 }}>
+                          <Button
+                            variant={isActive ? "default" : "outline"}
+                            size="sm"
+                            onClick={() => setPagination(prev => ({ ...prev, current: page }))}
+                            className={isActive 
+                              ? "bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 border-none" 
+                              : "border-zinc-700 text-zinc-400 hover:border-purple-500/50 hover:text-purple-400 transition-colors duration-300"}
+                          >
+                            {page}
+                          </Button>
+                        </motion.div>
                       );
                     } else if (
                       (page === 2 && pagination.current > 3) ||
@@ -445,39 +476,84 @@ const VenturesPage = () => {
                   })}
                 </div>
                 
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setPagination(prev => ({ ...prev, current: Math.min(pagination.pages, prev.current + 1) }))}
-                  disabled={pagination.current === pagination.pages}
-                  className="border-zinc-700 text-zinc-400"
-                >
-                  Next
-                </Button>
+                <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setPagination(prev => ({ ...prev, current: Math.min(pagination.pages, prev.current + 1) }))}
+                    disabled={pagination.current === pagination.pages}
+                    className="border-zinc-700 text-zinc-400 hover:border-purple-500/50 hover:text-purple-400 transition-colors duration-300"
+                  >
+                    Next
+                  </Button>
+                </motion.div>
               </div>
-            </div>
+            </motion.div>
           )}
 
           {/* Submit your venture CTA */}
           <motion.div
-            initial={{ opacity: 0, y: 20 }}
+            initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.5, delay: 0.2 }}
-            className="mt-16 rounded-lg border border-purple-500/20 bg-gradient-to-br from-zinc-900 via-purple-950/20 to-zinc-900 p-8 text-center"
+            transition={{ duration: 0.7, delay: 0.3, type: 'spring' }}
+            className="mt-20 rounded-lg border border-purple-500/20 bg-gradient-to-br from-zinc-900 via-purple-950/20 to-zinc-900 p-8 text-center relative overflow-hidden"
           >
-            <h2 className="text-2xl font-bold text-white">Have a venture to showcase?</h2>
-            <p className="mt-2 text-zinc-400">
-              Submit your project to be featured in our futuristic ecosystem
-            </p>
-            <Button 
-              className="mt-4 bg-purple-600 hover:bg-purple-700"
-              onClick={() => router.push('/ventures/submit')}
+            {/* Animated background effect */}
+            <motion.div 
+              className="absolute inset-0 bg-gradient-to-r from-purple-900/0 via-purple-900/20 to-purple-900/0"
+              animate={{
+                x: [-100, 400],
+                opacity: [0, 1, 0],
+              }}
+              transition={{ 
+                repeat: Infinity, 
+                duration: 5,
+                ease: 'linear',
+              }}
+            />
+            
+            <motion.div 
+              className="relative z-10"
+              animate={{
+                y: [0, -5, 0],
+              }}
+              transition={{ 
+                repeat: Infinity, 
+                duration: 5,
+                ease: 'easeInOut',
+              }}
             >
-              Submit Your Venture
-            </Button>
+              <h2 className="text-3xl font-bold text-white mb-2">
+                Have a venture to showcase?
+              </h2>
+              <p className="text-lg text-zinc-300 max-w-2xl mx-auto">
+                Submit your project to be featured in our futuristic ecosystem
+              </p>
+              <motion.div 
+                className="mt-6 inline-block"
+                whileHover={{ scale: 1.05 }}
+                whileTap={{ scale: 0.95 }}
+              >
+                <Button 
+                  className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white px-6 py-6 text-lg relative overflow-hidden group"
+                  onClick={() => router.push('/ventures/submit')}
+                >
+                  <span className="relative z-10">Submit Your Venture</span>
+                  <motion.div 
+                    className="absolute inset-0 bg-gradient-to-r from-pink-600 to-purple-600"
+                    initial={{ x: '-100%' }}
+                    whileHover={{ x: 0 }}
+                    transition={{ duration: 0.4 }}
+                  />
+                </Button>
+              </motion.div>
+            </motion.div>
           </motion.div>
-        </div>
+        </motion.div>
       </main>
+      
+      {/* Nova AI Assistant */}
+      {isMounted && <Nova />}
     </div>
   );
 };
