@@ -34,7 +34,7 @@ const FeaturesSection: React.FC = () => {
       title: 'Nova: Conversational Intelligence',
       description: 'Our AI assistant understands context from your words, emotions, and engagement style.',
       icon: <Wand2 size={24} />,
-      content: 'Nova doesn't just respond to queries—she proactively suggests pathways based on emotional cues and curiosity signals, creating a truly personalized guidance experience.'
+      content: "Nova doesn't just respond to queries—she proactively suggests pathways based on emotional cues and curiosity signals, creating a truly personalized guidance experience."
     },
     {
       title: 'Dynamic Data Storytelling',
@@ -46,7 +46,7 @@ const FeaturesSection: React.FC = () => {
       title: 'Hyper-Personalized Pathways',
       description: 'The platform adapts dynamically to your intent and actions, creating unique journeys.',
       icon: <Fingerprint size={24} />,
-      content: 'Based on AI analysis of your behavior, the site alters its layout and content in real-time, focusing on what's most relevant to you at that moment.'
+      content: "Based on AI analysis of your behavior, the site alters its layout and content in real-time, focusing on what's most relevant to you at that moment."
     }
   ];
 
