@@ -1,4 +1,4 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, memo } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
 import { VentureWithRelations, VentureStage } from '@/types/venture';
@@ -22,22 +22,24 @@ const stageColors: Record<VentureStage, string> = {
 
 const stageIcons: Record<VentureStage, React.ReactNode> = {
   IDEA: <Sparkles className="w-3 h-3" />,
-  PROTOTYPE: <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />,
+  PROTOTYPE: <div className="w-3 h-3 rounded-full bg-blue-500" />,
   MVP: <div className="w-3 h-3 rounded-sm bg-green-500" />,
-  GROWTH: <div className="w-3 h-3 rounded-md bg-amber-500 animate-ping animate-duration-[3000ms]" />,
+  GROWTH: <div className="w-3 h-3 rounded-md bg-amber-500" />,
   SCALE: <Star className="w-3 h-3 text-red-500" />,
 };
 
-const VentureCard3D: React.FC<VentureCard3DProps> = ({ venture, index }) => {
+// Using memo to prevent unnecessary re-renders
+const VentureCard3D: React.FC<VentureCard3DProps> = memo(({ venture, index }) => {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
   const cardRef = useRef<HTMLDivElement>(null);
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
-  const [glowPosition, setGlowPosition] = useState({ x: 0, y: 0 });
+  const [glowPosition, setGlowPosition] = useState({ x: 50, y: 50 });
 
+  // Throttled mouse move handler to improve performance
   const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (!cardRef.current) return;
+    if (!cardRef.current || !isHovered) return;
     
     const rect = cardRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -47,8 +49,9 @@ const VentureCard3D: React.FC<VentureCard3DProps> = ({ venture, index }) => {
     const mouseY = e.clientY;
     
     // Calculate rotation based on mouse position relative to card center
-    const rotateXValue = ((mouseY - centerY) / (rect.height / 2)) * 5;
-    const rotateYValue = ((centerX - mouseX) / (rect.width / 2)) * 5;
+    // Reduced rotation amount for better performance
+    const rotateXValue = ((mouseY - centerY) / (rect.height / 2)) * 3;
+    const rotateYValue = ((centerX - mouseX) / (rect.width / 2)) * 3;
     
     setRotateX(rotateXValue);
     setRotateY(rotateYValue);
@@ -60,6 +63,7 @@ const VentureCard3D: React.FC<VentureCard3DProps> = ({ venture, index }) => {
   };
 
   const resetCardRotation = () => {
+    setIsHovered(false);
     setRotateX(0);
     setRotateY(0);
   };
@@ -67,132 +71,74 @@ const VentureCard3D: React.FC<VentureCard3DProps> = ({ venture, index }) => {
   return (
     <motion.div
       ref={cardRef}
-      initial={{ opacity: 0, y: 50 }}
+      initial={{ opacity: 0, y: 20 }}
       animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -20 }}
+      exit={{ opacity: 0 }}
       transition={{ 
-        duration: 0.5, 
-        delay: index * 0.1,
-        type: "spring",
-        stiffness: 100
+        duration: 0.3, 
+        delay: Math.min(index * 0.05, 0.3), // Cap the delay to improve loading time
       }}
-      className="w-full perspective-1000"
+      className="w-full"
       onMouseMove={handleMouseMove}
       onMouseLeave={resetCardRotation}
       onMouseEnter={() => setIsHovered(true)}
       onClick={() => router.push(`/ventures/${venture.slug}`)}
-      style={{
-        transformStyle: 'preserve-3d',
-      }}
     >
       <motion.div
         animate={{
           rotateX: rotateX,
           rotateY: rotateY,
-          z: isHovered ? 20 : 0,
-          scale: isHovered ? 1.03 : 1,
+          scale: isHovered ? 1.02 : 1,
         }}
         transition={{
           type: "spring",
-          stiffness: 300,
-          damping: 15
-        }}
-        style={{
-          transformStyle: 'preserve-3d',
+          stiffness: 200,
+          damping: 20
         }}
       >
         <Card 
-          className={`relative overflow-hidden border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm cursor-pointer`}
+          className="relative overflow-hidden border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm cursor-pointer"
         >
-          {/* Dynamic glow effect */}
-          <div 
-            className="absolute inset-0 opacity-0 transition-opacity duration-300 pointer-events-none z-0"
-            style={{
-              opacity: isHovered ? 0.15 : 0,
-              background: `radial-gradient(circle at ${glowPosition.x}% ${glowPosition.y}%, ${
-                venture.stage === 'IDEA' ? '#a855f7' : 
-                venture.stage === 'PROTOTYPE' ? '#3b82f6' : 
-                venture.stage === 'MVP' ? '#22c55e' : 
-                venture.stage === 'GROWTH' ? '#f59e0b' : 
-                '#ef4444'
-              }, transparent 70%)`,
-            }}
-          />
-          
-          {/* Animated gradient border */}
-          <div 
-            className="absolute inset-0 rounded-lg opacity-0 transition-opacity duration-300 pointer-events-none"
-            style={{
-              opacity: isHovered ? 1 : 0,
-              background: `linear-gradient(90deg, transparent, ${
-                venture.stage === 'IDEA' ? '#a855f7' : 
-                venture.stage === 'PROTOTYPE' ? '#3b82f6' : 
-                venture.stage === 'MVP' ? '#22c55e' : 
-                venture.stage === 'GROWTH' ? '#f59e0b' : 
-                '#ef4444'
-              }40, transparent)`,
-              backgroundSize: '200% 100%',
-              animation: isHovered ? 'shimmer 2s infinite' : 'none',
-            }}
-          />
+          {/* Simplified glow effect - only show on hover */}
+          {isHovered && (
+            <div 
+              className="absolute inset-0 opacity-15 pointer-events-none z-0"
+              style={{
+                background: `radial-gradient(circle at ${glowPosition.x}% ${glowPosition.y}%, ${
+                  venture.stage === 'IDEA' ? '#a855f7' : 
+                  venture.stage === 'PROTOTYPE' ? '#3b82f6' : 
+                  venture.stage === 'MVP' ? '#22c55e' : 
+                  venture.stage === 'GROWTH' ? '#f59e0b' : 
+                  '#ef4444'
+                }, transparent 70%)`,
+              }}
+            />
+          )}
           
           {/* Venture content */}
           <div className="relative z-10 p-6">
             <div className="flex items-start justify-between">
               <div className="flex items-center space-x-3">
                 {venture.logo ? (
-                  <motion.div 
-                    className="relative h-12 w-12 overflow-hidden rounded-md bg-zinc-800"
-                    animate={{ 
-                      z: isHovered ? 30 : 0,
-                      rotateZ: isHovered ? [0, -5, 5, 0] : 0
-                    }}
-                    transition={{
-                      rotateZ: { repeat: isHovered ? Infinity : 0, duration: 5 }
-                    }}
-                    style={{ transformStyle: 'preserve-3d' }}
-                  >
+                  <div className="relative h-12 w-12 overflow-hidden rounded-md bg-zinc-800">
                     <img 
                       src={venture.logo} 
                       alt={`${venture.name} logo`} 
                       className="h-full w-full object-cover"
                     />
-                  </motion.div>
+                  </div>
                 ) : (
-                  <motion.div 
-                    className="flex h-12 w-12 items-center justify-center rounded-md bg-zinc-800 text-xl font-bold text-white"
-                    animate={{ 
-                      z: isHovered ? 30 : 0,
-                      rotateZ: isHovered ? [0, -5, 5, 0] : 0
-                    }}
-                    transition={{
-                      rotateZ: { repeat: isHovered ? Infinity : 0, duration: 5 }
-                    }}
-                    style={{ transformStyle: 'preserve-3d' }}
-                  >
+                  <div className="flex h-12 w-12 items-center justify-center rounded-md bg-zinc-800 text-xl font-bold text-white">
                     {venture.name.charAt(0)}
-                  </motion.div>
+                  </div>
                 )}
                 <div>
-                  <motion.h3 
-                    className="text-lg font-bold text-white transition-colors"
-                    animate={{ 
-                      z: isHovered ? 20 : 0,
-                      color: isHovered ? 
-                        venture.stage === 'IDEA' ? '#c084fc' : 
-                        venture.stage === 'PROTOTYPE' ? '#93c5fd' : 
-                        venture.stage === 'MVP' ? '#86efac' : 
-                        venture.stage === 'GROWTH' ? '#fcd34d' : 
-                        '#fca5a5' 
-                        : '#ffffff'
-                    }}
-                    style={{ transformStyle: 'preserve-3d' }}
-                  >
+                  <h3 className={`text-lg font-bold ${isHovered ? 'text-purple-400' : 'text-white'} transition-colors`}>
                     {venture.name}
                     {venture.isStealthMode && (
                       <span className="ml-2 text-xs text-zinc-400">(Stealth)</span>
                     )}
-                  </motion.h3>
+                  </h3>
                   <div className="flex items-center space-x-2 mt-1">
                     <Badge variant="outline" className={`flex items-center gap-1 px-2 py-0 text-xs ${stageColors[venture.stage]}`}>
                       {stageIcons[venture.stage]}
@@ -213,11 +159,7 @@ const VentureCard3D: React.FC<VentureCard3DProps> = ({ venture, index }) => {
                   </div>
                 </div>
               </div>
-              <motion.div 
-                className="flex items-center space-x-2"
-                animate={{ z: isHovered ? 15 : 0 }}
-                style={{ transformStyle: 'preserve-3d' }}
-              >
+              <div className="flex items-center space-x-2">
                 <Badge variant="secondary" className="flex items-center gap-1">
                   <ChevronUp className="h-3 w-3" />
                   {venture._count.upvotes}
@@ -226,22 +168,14 @@ const VentureCard3D: React.FC<VentureCard3DProps> = ({ venture, index }) => {
                   <Clock className="h-3 w-3" />
                   {new Date(venture.createdAt).toLocaleDateString()}
                 </Badge>
-              </motion.div>
+              </div>
             </div>
             
-            <motion.p 
-              className="mt-4 text-sm text-zinc-400"
-              animate={{ z: isHovered ? 10 : 0 }}
-              style={{ transformStyle: 'preserve-3d' }}
-            >
+            <p className="mt-4 text-sm text-zinc-400">
               {venture.description}
-            </motion.p>
+            </p>
             
-            <motion.div 
-              className="mt-4 flex flex-wrap gap-2"
-              animate={{ z: isHovered ? 10 : 0 }}
-              style={{ transformStyle: 'preserve-3d' }}
-            >
+            <div className="mt-4 flex flex-wrap gap-2">
               {venture.sectors.slice(0, 3).map((sector) => (
                 <Badge key={sector} variant="outline" className="bg-zinc-800/50 text-zinc-400">
                   {sector}
@@ -252,13 +186,9 @@ const VentureCard3D: React.FC<VentureCard3DProps> = ({ venture, index }) => {
                   +{venture.sectors.length - 3} more
                 </Badge>
               )}
-            </motion.div>
+            </div>
             
-            <motion.div 
-              className="mt-6 flex items-center justify-between"
-              animate={{ z: isHovered ? 15 : 0 }}
-              style={{ transformStyle: 'preserve-3d' }}
-            >
+            <div className="mt-6 flex items-center justify-between">
               <div className="flex -space-x-2">
                 {venture.founders.map((founder) => (
                   <div key={founder.id} className="h-8 w-8 rounded-full bg-zinc-700 border-2 border-zinc-900 overflow-hidden">
@@ -282,12 +212,19 @@ const VentureCard3D: React.FC<VentureCard3DProps> = ({ venture, index }) => {
                 <span>Explore</span>
                 <ArrowUpRight className="h-4 w-4" />
               </Button>
-            </motion.div>
+            </div>
           </div>
+          
+          {/* Simple border highlight on hover */}
+          {isHovered && (
+            <div className="absolute inset-0 border border-purple-500/30 rounded-lg pointer-events-none" />
+          )}
         </Card>
       </motion.div>
     </motion.div>
   );
-};
+});
+
+VentureCard3D.displayName = 'VentureCard3D';
 
 export default VentureCard3D;

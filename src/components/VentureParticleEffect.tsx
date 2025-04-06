@@ -1,4 +1,4 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, memo } from 'react';
 import { useRouter } from 'next/router';
 
 interface Particle {
@@ -9,13 +9,14 @@ interface Particle {
   speedY: number;
   color: string;
   alpha: number;
-  connections: number[];
 }
 
-const VentureParticleEffect: React.FC = () => {
+// Using memo to prevent unnecessary re-renders
+const VentureParticleEffect: React.FC = memo(() => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const mouseRef = useRef({ x: 0, y: 0 });
+  const animationFrameRef = useRef<number>(0);
   const router = useRouter();
   
   useEffect(() => {
@@ -30,15 +31,26 @@ const VentureParticleEffect: React.FC = () => {
       if (canvas) {
         canvas.width = window.innerWidth;
         canvas.height = window.innerHeight;
+        // Reinitialize particles when canvas size changes
+        initParticles();
       }
     };
     
     setCanvasDimensions();
-    window.addEventListener('resize', setCanvasDimensions);
     
-    // Initialize particles
+    // Throttled resize handler
+    let resizeTimeout: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(setCanvasDimensions, 200);
+    };
+    
+    window.addEventListener('resize', handleResize);
+    
+    // Initialize particles - reduced count for better performance
     const initParticles = () => {
-      const particleCount = Math.min(Math.floor(window.innerWidth / 20), 100);
+      // Reduce particle count for better performance
+      const particleCount = Math.min(Math.floor(window.innerWidth / 40), 50);
       const particles: Particle[] = [];
       
       const colors = ['#8b5cf6', '#6366f1', '#ec4899', '#f97316'];
@@ -47,31 +59,64 @@ const VentureParticleEffect: React.FC = () => {
         particles.push({
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
-          size: Math.random() * 2 + 1,
-          speedX: (Math.random() - 0.5) * 0.5,
-          speedY: (Math.random() - 0.5) * 0.5,
+          size: Math.random() * 1.5 + 0.5, // Smaller particles
+          speedX: (Math.random() - 0.5) * 0.3, // Slower movement
+          speedY: (Math.random() - 0.5) * 0.3,
           color: colors[Math.floor(Math.random() * colors.length)],
-          alpha: 0.1 + Math.random() * 0.4,
-          connections: []
+          alpha: 0.1 + Math.random() * 0.3
         });
       }
       
       particlesRef.current = particles;
     };
     
-    // Track mouse position
+    // Throttled mouse move handler
+    let lastMouseMoveTime = 0;
     const handleMouseMove = (e: MouseEvent) => {
-      mouseRef.current = { x: e.clientX, y: e.clientY };
+      const now = Date.now();
+      if (now - lastMouseMoveTime > 50) { // Only update every 50ms
+        mouseRef.current = { x: e.clientX, y: e.clientY };
+        lastMouseMoveTime = now;
+      }
     };
     
     window.addEventListener('mousemove', handleMouseMove);
     
-    // Animation loop
+    // Animation loop with performance optimizations
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
       // Update and draw particles
-      particlesRef.current.forEach((particle, index) => {
+      const particles = particlesRef.current;
+      const mouseX = mouseRef.current.x;
+      const mouseY = mouseRef.current.y;
+      
+      // Draw connections first (fewer, more selective connections)
+      ctx.strokeStyle = 'rgba(139, 92, 246, 0.05)';
+      ctx.beginPath();
+      
+      // Only check connections for a subset of particles
+      for (let i = 0; i < particles.length; i += 2) {
+        const particle = particles[i];
+        
+        for (let j = i + 2; j < particles.length; j += 2) {
+          const otherParticle = particles[j];
+          const dx = particle.x - otherParticle.x;
+          const dy = particle.y - otherParticle.y;
+          const distance = Math.sqrt(dx * dx + dy * dy);
+          
+          if (distance < 120) {
+            ctx.moveTo(particle.x, particle.y);
+            ctx.lineTo(otherParticle.x, otherParticle.y);
+          }
+        }
+      }
+      ctx.stroke();
+      
+      // Update and draw particles
+      for (let i = 0; i < particles.length; i++) {
+        const particle = particles[i];
+        
         // Update position
         particle.x += particle.speedX;
         particle.y += particle.speedY;
@@ -85,18 +130,18 @@ const VentureParticleEffect: React.FC = () => {
           particle.speedY *= -1;
         }
         
-        // Mouse interaction
-        const dx = mouseRef.current.x - particle.x;
-        const dy = mouseRef.current.y - particle.y;
+        // Mouse interaction - only apply to particles near the mouse
+        const dx = mouseX - particle.x;
+        const dy = mouseY - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance < 150) {
-          const force = (150 - distance) / 150;
-          particle.speedX += dx * force * 0.01;
-          particle.speedY += dy * force * 0.01;
+        if (distance < 100) {
+          const force = (100 - distance) / 100;
+          particle.speedX += dx * force * 0.005;
+          particle.speedY += dy * force * 0.005;
           
           // Limit speed
-          const maxSpeed = 2;
+          const maxSpeed = 1.5;
           const currentSpeed = Math.sqrt(particle.speedX * particle.speedX + particle.speedY * particle.speedY);
           if (currentSpeed > maxSpeed) {
             particle.speedX = (particle.speedX / currentSpeed) * maxSpeed;
@@ -110,40 +155,19 @@ const VentureParticleEffect: React.FC = () => {
         ctx.fillStyle = particle.color;
         ctx.globalAlpha = particle.alpha;
         ctx.fill();
-        ctx.globalAlpha = 1;
-        
-        // Find and draw connections
-        particle.connections = [];
-        particlesRef.current.forEach((otherParticle, otherIndex) => {
-          if (index !== otherIndex) {
-            const dx = particle.x - otherParticle.x;
-            const dy = particle.y - otherParticle.y;
-            const distance = Math.sqrt(dx * dx + dy * dy);
-            
-            if (distance < 100) {
-              particle.connections.push(otherIndex);
-              
-              ctx.beginPath();
-              ctx.moveTo(particle.x, particle.y);
-              ctx.lineTo(otherParticle.x, otherParticle.y);
-              ctx.strokeStyle = particle.color;
-              ctx.globalAlpha = 0.1 * (1 - distance / 100);
-              ctx.stroke();
-              ctx.globalAlpha = 1;
-            }
-          }
-        });
-      });
+      }
       
-      requestAnimationFrame(animate);
+      ctx.globalAlpha = 1;
+      animationFrameRef.current = requestAnimationFrame(animate);
     };
     
     initParticles();
     animate();
     
     return () => {
-      window.removeEventListener('resize', setCanvasDimensions);
+      window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
+      cancelAnimationFrame(animationFrameRef.current);
     };
   }, [router.pathname]);
   
@@ -153,6 +177,8 @@ const VentureParticleEffect: React.FC = () => {
       className="fixed top-0 left-0 w-full h-full pointer-events-none z-0"
     />
   );
-};
+});
+
+VentureParticleEffect.displayName = 'VentureParticleEffect';
 
 export default VentureParticleEffect;
