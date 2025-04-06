@@ -96,21 +96,6 @@ const FuturisticTabs: React.FC<FuturisticTabsProps> = ({ activeStage, onStageCha
             </motion.button>
           );
         })}
-        
-        {/* Animated background for active tab */}
-        <motion.div
-          className="absolute rounded-md z-0"
-          layoutId="activeTabBackground"
-          transition={{ type: 'spring', stiffness: 300, damping: 30 }}
-          style={{
-            width: document.querySelector(`button:nth-child(${tabs.findIndex(tab => tab.id === activeStage) + 1})`)?.getBoundingClientRect().width || 0,
-            height: document.querySelector(`button:nth-child(${tabs.findIndex(tab => tab.id === activeStage) + 1})`)?.getBoundingClientRect().height || 0,
-            left: document.querySelector(`button:nth-child(${tabs.findIndex(tab => tab.id === activeStage) + 1})`)?.getBoundingClientRect().left - 
-                  (document.querySelector('.relative.mb-8')?.getBoundingClientRect().left || 0) + 'px',
-            top: document.querySelector(`button:nth-child(${tabs.findIndex(tab => tab.id === activeStage) + 1})`)?.getBoundingClientRect().top - 
-                 (document.querySelector('.relative.mb-8')?.getBoundingClientRect().top || 0) + 'px',
-          }}
-        />
       </motion.div>
     </div>
   );
