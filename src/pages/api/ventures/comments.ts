@@ -1,24 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '@/lib/prisma';
-
-// This is a simplified version - in a real app, you would implement proper authentication
-const getCurrentUser = async (req: NextApiRequest) => {
-  // For demo purposes, we'll create a mock user if none exists
-  let user = await prisma.user.findFirst({
-    where: { email: 'demo@coact.com' }
-  });
-  
-  if (!user) {
-    user = await prisma.user.create({
-      data: {
-        email: 'demo@coact.com',
-        name: 'Demo User'
-      }
-    });
-  }
-  
-  return user;
-};
+import { addComment, mockVentures } from '@/lib/mockData';
 
 export default async function handler(
   req: NextApiRequest,
@@ -32,36 +13,10 @@ export default async function handler(
         return res.status(400).json({ error: 'Venture ID and comment content are required' });
       }
       
-      // Get current user (in a real app, this would use your auth system)
-      const user = await getCurrentUser(req);
+      console.log(`User commenting on venture ${ventureId}`);
       
-      if (!user) {
-        return res.status(401).json({ error: 'Authentication required' });
-      }
-      
-      console.log(`User ${user.id} commenting on venture ${ventureId}`);
-      
-      // Create new comment
-      const comment = await prisma.comment.create({
-        data: {
-          content,
-          user: {
-            connect: { id: user.id }
-          },
-          venture: {
-            connect: { id: ventureId }
-          }
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              image: true
-            }
-          }
-        }
-      });
+      // Use mock comment function
+      const comment = addComment(ventureId, content);
       
       console.log(`Added comment to venture ${ventureId}`);
       
@@ -81,46 +36,26 @@ export default async function handler(
       // Parse numeric values
       const limitNum = parseInt(limit as string);
       const pageNum = parseInt(page as string);
-      const skip = (pageNum - 1) * limitNum;
       
       console.log(`Fetching comments for venture ${ventureId}`);
       
-      // Fetch comments with pagination
-      const comments = await prisma.comment.findMany({
-        where: {
-          ventureId: ventureId as string
-        },
-        include: {
-          user: {
-            select: {
-              id: true,
-              name: true,
-              image: true
-            }
-          }
-        },
-        orderBy: {
-          createdAt: 'desc'
-        },
-        skip,
-        take: limitNum
-      });
+      // Find the venture to get its comments
+      const venture = mockVentures.find(v => v.id === ventureId);
+      const comments = venture?.comments || [];
       
-      // Get total count for pagination
-      const totalComments = await prisma.comment.count({
-        where: {
-          ventureId: ventureId as string
-        }
-      });
+      // Simple pagination
+      const start = (pageNum - 1) * limitNum;
+      const end = start + limitNum;
+      const paginatedComments = comments.slice(start, end);
       
-      console.log(`Found ${comments.length} comments out of ${totalComments} total`);
+      console.log(`Found ${paginatedComments.length} comments out of ${comments.length} total`);
       
       // Return comments with pagination metadata
       return res.status(200).json({
-        comments,
+        comments: paginatedComments,
         pagination: {
-          total: totalComments,
-          pages: Math.ceil(totalComments / limitNum),
+          total: comments.length,
+          pages: Math.ceil(comments.length / limitNum),
           current: pageNum,
           limit: limitNum
         }

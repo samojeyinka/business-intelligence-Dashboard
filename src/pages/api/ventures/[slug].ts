@@ -1,5 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import prisma from '@/lib/prisma';
+import { getVentureBySlug } from '@/lib/mockData';
 
 export default async function handler(
   req: NextApiRequest,
@@ -15,37 +15,7 @@ export default async function handler(
       
       console.log(`Fetching venture with slug: ${slug}`);
       
-      const venture = await prisma.venture.findUnique({
-        where: { slug },
-        include: {
-          _count: {
-            select: { upvotes: true, comments: true }
-          },
-          founders: {
-            select: {
-              id: true,
-              name: true,
-              image: true,
-              email: true
-            }
-          },
-          comments: {
-            include: {
-              user: {
-                select: {
-                  id: true,
-                  name: true,
-                  image: true
-                }
-              }
-            },
-            orderBy: {
-              createdAt: 'desc'
-            },
-            take: 10
-          }
-        }
-      });
+      const venture = getVentureBySlug(slug);
       
       if (!venture) {
         return res.status(404).json({ error: 'Venture not found' });
