@@ -6,12 +6,12 @@ interface LogoSliderProps {
 }
 
 const defaultLogos = [
-  { src: '/images/portfolio/logo1.png', alt: 'Portfolio Company 1' },
-  { src: '/images/portfolio/logo2.png', alt: 'Portfolio Company 2' },
-  { src: '/images/portfolio/logo3.png', alt: 'Portfolio Company 3' },
-  { src: '/images/portfolio/logo4.png', alt: 'Portfolio Company 4' },
-  { src: '/images/portfolio/logo5.png', alt: 'Portfolio Company 5' },
-  { src: '/images/portfolio/logo6.png', alt: 'Portfolio Company 6' },
+  { src: '/images/portfolio/logo1.png', alt: 'Portfolio Company 1', url: undefined },
+  { src: '/images/portfolio/logo2.png', alt: 'Portfolio Company 2', url: undefined },
+  { src: '/images/portfolio/logo3.png', alt: 'Portfolio Company 3', url: undefined },
+  { src: '/images/portfolio/logo4.png', alt: 'Portfolio Company 4', url: undefined },
+  { src: '/images/portfolio/logo5.png', alt: 'Portfolio Company 5', url: undefined },
+  { src: '/images/portfolio/logo6.png', alt: 'Portfolio Company 6', url: undefined },
 ];
 
 const LogoSlider: React.FC<LogoSliderProps> = ({ logos = defaultLogos }) => {
