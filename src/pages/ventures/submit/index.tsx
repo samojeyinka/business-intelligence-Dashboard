@@ -31,7 +31,6 @@ const formSchema = z.object({
   website: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
   twitter: z.string().optional(),
   linkedin: z.string().url({ message: 'Please enter a valid LinkedIn URL' }).optional().or(z.literal('')),
-  github: z.string().optional(),
   teamSize: z.number().min(1).default(1),
   foundedDate: z.string().optional(),
   logo: z.any().optional(),
@@ -60,7 +59,6 @@ const SubmitVenturePage = () => {
       website: '',
       twitter: '',
       linkedin: '',
-      github: '',
       teamSize: 1,
       foundedDate: '',
       termsAccepted: false,
@@ -111,6 +109,7 @@ const SubmitVenturePage = () => {
     'Healthcare',
     'SaaS',
     'Social Impact',
+    'Other',
   ];
 
   // Available technologies
@@ -125,6 +124,7 @@ const SubmitVenturePage = () => {
     'AWS',
     'Docker',
     'Kubernetes',
+    'Other',
   ];
 
   return (
@@ -447,57 +447,40 @@ const SubmitVenturePage = () => {
                         />
                       </div>
                       
-                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                        <FormField
-                          control={form.control}
-                          name="linkedin"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>LinkedIn</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="https://linkedin.com/company/yourventure" 
-                                  className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                        
-                        <FormField
-                          control={form.control}
-                          name="github"
-                          render={({ field }) => (
-                            <FormItem>
-                              <FormLabel>GitHub</FormLabel>
-                              <FormControl>
-                                <Input 
-                                  placeholder="yourventure" 
-                                  className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
-                                  {...field} 
-                                />
-                              </FormControl>
-                              <FormMessage />
-                            </FormItem>
-                          )}
-                        />
-                      </div>
+                      <FormField
+                        control={form.control}
+                        name="linkedin"
+                        render={({ field }) => (
+                          <FormItem>
+                            <FormLabel>LinkedIn</FormLabel>
+                            <FormControl>
+                              <Input 
+                                placeholder="https://linkedin.com/company/yourventure" 
+                                className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
+                                {...field} 
+                              />
+                            </FormControl>
+                            <FormMessage />
+                          </FormItem>
+                        )}
+                      />
                       
                       <FormField
                         control={form.control}
                         name="foundedDate"
                         render={({ field }) => (
                           <FormItem>
-                            <FormLabel>Founded Date</FormLabel>
+                            <FormLabel>Founded Date (MM/YYYY)</FormLabel>
                             <FormControl>
                               <Input 
-                                type="date" 
+                                type="month" 
                                 className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
                                 {...field} 
                               />
                             </FormControl>
+                            <FormDescription>
+                              Please select the month and year your venture was founded
+                            </FormDescription>
                             <FormMessage />
                           </FormItem>
                         )}

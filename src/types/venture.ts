@@ -48,6 +48,7 @@ export type Venture = {
   isAnonymous: boolean;
   isStealthMode: boolean;
   isLookingForCollaborators: boolean;
+  isCoactProduct: boolean;
   sectors: string[];
   technologies: string[];
   teamSize: number;
