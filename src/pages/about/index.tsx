@@ -103,10 +103,22 @@ const InteractiveMission = () => {
         </motion.span>
         {' '}the future.
       </h2>
-      <p className="text-xl text-gray-300">
-        Coact is a venture studio with a goal to learn, explore and build. 
-        We partner with founders and organisations in pursuit of this mission.
+      <p className="text-xl text-gray-300 mb-6">
+        Coact is a venture creation engine built to empower bold thinkers, curious minds, and passionate builders.
+        We exist to help people—regardless of background—turn ideas into impactful startups.
       </p>
+      <div className="mt-8 p-6 rounded-xl bg-gray-800/30 border border-gray-700">
+        <h3 className="text-2xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">
+          🌍 Our Vision
+        </h3>
+        <p className="text-lg text-gray-300 mb-4">
+          To become the foundational infrastructure for startup creation across Africa—and eventually, globally.
+          We want Coact to be the platform people return to when they want to create again, grow again, learn again.
+        </p>
+        <p className="text-lg text-gray-300 italic">
+          This is the new frontier. The future belongs to the curious.
+        </p>
+      </div>
     </div>
   );
 };
@@ -360,8 +372,23 @@ export default function AboutPage() {
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8">
-              A venture studio reimagining how we learn, explore, and build together
+              A venture creation engine built to empower bold thinkers, curious minds, and passionate builders
             </p>
+            
+            <motion.div
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.3, duration: 0.8 }}
+              className="max-w-3xl mx-auto p-6 rounded-xl bg-gray-800/20 border border-gray-700 mb-10"
+            >
+              <p className="text-lg text-gray-300">
+                Our platform brings together everything needed to create, grow, and sustain ventures in today's fast-changing world.
+                But we're more than just a startup builder—we're building a living ecosystem for the curious.
+              </p>
+              <p className="text-lg text-gray-300 mt-4 italic font-medium">
+                This is the new frontier. The future belongs to the curious.
+              </p>
+            </motion.div>
             
             <motion.div
               initial={{ opacity: 0 }}

@@ -53,12 +53,25 @@ const EcosystemSection = () => {
         >
           <h2 className="text-3xl md:text-4xl font-bold mb-4">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">
-              Our Ecosystem
+              🧠 The Ecosystem of the Curious
             </span>
           </h2>
-          <p className="text-xl text-gray-300 max-w-3xl mx-auto">
-            Whether you're building, investing, collaborating, or advising—Coact is a launchpad for creators of the next era.
+          <p className="text-xl text-gray-300 max-w-3xl mx-auto mb-6">
+            We are designing a new kind of space—one where founders can launch bold ideas, 
+            talents can grow their skills, investors can support real innovation, 
+            and anyone curious can explore, learn, and evolve.
           </p>
+          <div className="max-w-3xl mx-auto bg-gray-800/30 border border-gray-700 rounded-xl p-6 mb-10">
+            <p className="text-lg text-gray-300 mb-4">
+              Coact is where builders, learners, and dreamers collide.
+              It's not just about launching startups.
+              It's about building a culture of experimentation, learning, and impact.
+            </p>
+            <p className="text-lg text-gray-300">
+              We're building a living ecosystem for the curious—a space where learning never stops, 
+              where ideas evolve, and where every challenge is a chance to build something new.
+            </p>
+          </div>
         </motion.div>
         
         {/* Interactive Ecosystem Visualization */}
