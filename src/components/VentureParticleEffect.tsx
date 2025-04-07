@@ -26,27 +26,6 @@ const VentureParticleEffect: React.FC = memo(() => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Set canvas dimensions
-    const setCanvasDimensions = () => {
-      if (canvas) {
-        canvas.width = window.innerWidth;
-        canvas.height = window.innerHeight;
-        // Reinitialize particles when canvas size changes
-        initParticles();
-      }
-    };
-    
-    setCanvasDimensions();
-    
-    // Throttled resize handler
-    let resizeTimeout: NodeJS.Timeout;
-    const handleResize = () => {
-      clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(setCanvasDimensions, 200);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    
     // Initialize particles - reduced count for better performance
     const initParticles = () => {
       // Reduce particle count for better performance
@@ -69,6 +48,27 @@ const VentureParticleEffect: React.FC = memo(() => {
       
       particlesRef.current = particles;
     };
+    
+    // Set canvas dimensions
+    const setCanvasDimensions = () => {
+      if (canvas) {
+        canvas.width = window.innerWidth;
+        canvas.height = window.innerHeight;
+        // Reinitialize particles when canvas size changes
+        initParticles();
+      }
+    };
+    
+    setCanvasDimensions();
+    
+    // Throttled resize handler
+    let resizeTimeout: NodeJS.Timeout;
+    const handleResize = () => {
+      clearTimeout(resizeTimeout);
+      resizeTimeout = setTimeout(setCanvasDimensions, 200);
+    };
+    
+    window.addEventListener('resize', handleResize);
     
     // Throttled mouse move handler
     let lastMouseMoveTime = 0;
