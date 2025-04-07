@@ -12,11 +12,12 @@ const rateLimitStore = new Map<string, { count: number; resetTime: number }>();
 // Clean up the store periodically to prevent memory leaks
 setInterval(() => {
   const now = Date.now();
-  for (const [key, value] of rateLimitStore.entries()) {
+  // Use Array.from to avoid TypeScript iterator issues
+  Array.from(rateLimitStore.entries()).forEach(([key, value]) => {
     if (now > value.resetTime) {
       rateLimitStore.delete(key);
     }
-  }
+  });
 }, 60000); // Clean up every minute
 
 export function rateLimit(config: RateLimitConfig = { limit: 60, windowMs: 60000 }) {

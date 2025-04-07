@@ -46,8 +46,12 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
     const comments = venture.comments || [];
     
     // Simple pagination
-    const start = (page - 1) * limit;
-    const end = start + limit;
+    // Ensure page and limit are defined (they should be from validation, but TypeScript doesn't know that)
+    const pageNum = page || 1;
+    const limitNum = limit || 10;
+    
+    const start = (pageNum - 1) * limitNum;
+    const end = start + limitNum;
     const paginatedComments = comments.slice(start, end);
     
     console.log(`Found ${paginatedComments.length} comments out of ${comments.length} total`);
@@ -57,9 +61,9 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       comments: paginatedComments,
       pagination: {
         total: comments.length,
-        pages: Math.ceil(comments.length / limit),
-        current: page,
-        limit
+        pages: Math.ceil(comments.length / limitNum),
+        current: pageNum,
+        limit: limitNum
       }
     });
   }
