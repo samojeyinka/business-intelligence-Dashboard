@@ -6,11 +6,12 @@ interface LogoSliderProps {
 }
 
 const defaultLogos = [
-  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/21-a8e8399.png', alt: 'Portfolio Company 1', url: undefined },
-  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/22-07621d6.png', alt: 'Portfolio Company 2', url: undefined },
-  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/23-6718f83.png', alt: 'Portfolio Company 3', url: undefined },
-  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/24-3612c33.png', alt: 'Portfolio Company 4', url: undefined },
-  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/25-9158539.png', alt: 'Portfolio Company 5', url: undefined },
+  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/handl-021c685.png', alt: 'Handl', url: undefined },
+  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/fieldrun-cc9c99c.png', alt: 'Fieldrun', url: undefined },
+  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/union-1b85978.png', alt: 'Union', url: undefined },
+  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/crestal-logo-b62823c.png', alt: 'Crestal', url: undefined },
+  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/whatsapp-image-2025-02-18-at-07.43.16-2d07dd1.jpeg', alt: 'Portfolio Company', url: undefined },
+  { src: 'https://assets.co.dev/673d85cf-0def-4aad-a795-cd2e588946de/matchpoint-e623d3e.png', alt: 'Matchpoint', url: undefined },
 ];
 
 const LogoSlider: React.FC<LogoSliderProps> = ({ logos = defaultLogos }) => {
