@@ -53,7 +53,7 @@ const CommentSection: React.FC<CommentSectionProps> = ({ postId }) => {
             name: 'Jordan Taylor',
             avatar: 'https://randomuser.me/api/portraits/men/22.jpg',
           },
-          content: 'Great point! I've seen similar approaches in healthcare innovation.',
+          content: "Great point! I've seen similar approaches in healthcare innovation.",
           timestamp: '20 hours ago',
           likes: 2,
           isLiked: false,
