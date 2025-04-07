@@ -175,7 +175,7 @@ const JourneySection = () => {
 
 // Interactive values game component
 const ValuesGame = () => {
-  const [activeValue, setActiveValue] = useState(null);
+  const [activeValue, setActiveValue] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   
   const values = [
@@ -205,7 +205,7 @@ const ValuesGame = () => {
     },
   ];
   
-  const handleValueClick = (id) => {
+  const handleValueClick = (id: string) => {
     setActiveValue(id);
     setScore(prev => prev + 10);
   };

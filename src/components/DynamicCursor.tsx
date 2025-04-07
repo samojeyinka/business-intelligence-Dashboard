@@ -1,29 +1,27 @@
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 
 const DynamicCursor: React.FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isPointer, setIsPointer] = useState(false);
 
+  // Combined handler for both mouse position and pointer detection
+  const handleMouseMove = useCallback((e: MouseEvent) => {
+    setMousePosition({ x: e.clientX, y: e.clientY });
+    
+    // Check if the cursor is over a clickable element
+    const hoveredElement = document.elementFromPoint(e.clientX, e.clientY);
+    const computedStyle = hoveredElement ? window.getComputedStyle(hoveredElement).cursor : '';
+    setIsPointer(computedStyle === 'pointer');
+  }, []);
+
   useEffect(() => {
-    const handleMouseMove = (e: MouseEvent) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-
-    const handlePointerDetection = () => {
-      const hoveredElement = document.elementFromPoint(mousePosition.x, mousePosition.y);
-      const computedStyle = hoveredElement ? window.getComputedStyle(hoveredElement).cursor : '';
-      setIsPointer(computedStyle === 'pointer');
-    };
-
     window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('mousemove', handlePointerDetection);
-
+    
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('mousemove', handlePointerDetection);
     };
-  }, [mousePosition.x, mousePosition.y]);
+  }, [handleMouseMove]);
 
   return (
     <>
