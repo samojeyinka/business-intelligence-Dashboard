@@ -27,7 +27,7 @@ export default function SubmitSuccessPage() {
       </Head>
       
       <div className="min-h-screen bg-black text-white relative">
-        <InteractiveBackground intensity={0.3} />
+        <InteractiveBackground />
         
         {/* Header */}
         <Header />
