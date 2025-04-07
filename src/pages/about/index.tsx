@@ -6,6 +6,7 @@ import { Card } from '@/components/ui/card';
 import DynamicCursor from '@/components/DynamicCursor';
 import InteractiveBackground from '@/components/InteractiveBackground';
 import EcosystemSection from '@/components/EcosystemSection';
+import Header from '@/components/Header';
 
 // Define the sections for the interactive journey
 const journeySections = [
@@ -337,8 +338,14 @@ const CallToAction = () => {
 };
 
 export default function AboutPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const { scrollYProgress } = useScroll();
   const progressHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  
+  // Only show dynamic cursor on client-side to prevent hydration errors
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   return (
     <>
@@ -347,10 +354,13 @@ export default function AboutPage() {
         <meta name="description" content="Learn about Coact Ventures - a venture studio focused on learning, exploring, and building the future." />
       </Head>
       
-      <DynamicCursor />
+      {isMounted && <DynamicCursor />}
       
       <div className="min-h-screen bg-black text-white relative overflow-hidden">
         <InteractiveBackground />
+        
+        {/* Header */}
+        <Header />
         
         {/* Progress bar */}
         <motion.div 
