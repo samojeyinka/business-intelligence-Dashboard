@@ -25,7 +25,7 @@ const ContributionCta: React.FC = () => {
               </div>
               
               <h2 className="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-                Contribute to Our Living Blog
+                Contribute to Knowledge Nexus
               </h2>
               
               <p className="text-gray-300 mb-6">

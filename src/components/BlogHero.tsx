@@ -119,7 +119,7 @@ const BlogHero: React.FC<BlogHeroProps> = ({ contributorCount, articleCount }) =
           
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-400">
-              The Living Blog
+              Knowledge Nexus
             </span>
           </h1>
           
@@ -142,7 +142,7 @@ const BlogHero: React.FC<BlogHeroProps> = ({ contributorCount, articleCount }) =
             transition={{ delay: 0.3, duration: 0.8 }}
             className="text-lg text-gray-400 max-w-3xl mx-auto mb-10"
           >
-            A futuristic platform fostering open knowledge through collective efforts.
+            A platform fostering open knowledge through collective efforts.
             Explore insights, contribute your expertise, and be part of building the future.
           </motion.p>
           
