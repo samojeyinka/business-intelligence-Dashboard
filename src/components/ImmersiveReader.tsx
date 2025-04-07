@@ -5,6 +5,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
+import CommentSection from '@/components/CommentSection';
 import { BlogPost } from './BlogPostCard';
 
 interface ImmersiveReaderProps {
@@ -128,7 +129,7 @@ const ImmersiveReader: React.FC<ImmersiveReaderProps> = ({ post, onClose }) => {
         
         {/* Floating action buttons */}
         <motion.div 
-          className="fixed right-6 top-1/2 transform -translate-y-1/2 flex flex-col gap-4 z-50"
+          className="fixed right-6 top-2/3 transform -translate-y-1/2 flex flex-col gap-4 z-50"
           initial={{ opacity: 0, x: 20 }}
           animate={{ opacity: showControls ? 1 : 0, x: showControls ? 0 : 20 }}
           transition={{ duration: 0.2 }}
@@ -161,7 +162,15 @@ const ImmersiveReader: React.FC<ImmersiveReaderProps> = ({ post, onClose }) => {
             size="icon" 
             variant="ghost" 
             className="rounded-full bg-zinc-900/80 text-zinc-400 hover:text-white hover:bg-zinc-800 transition-all duration-200"
-            onClick={() => console.log('Comment')}
+            onClick={() => {
+              const commentsSection = document.getElementById('immersive-scroll-container');
+              if (commentsSection) {
+                commentsSection.scrollTo({
+                  top: commentsSection.scrollHeight,
+                  behavior: 'smooth'
+                });
+              }
+            }}
           >
             <div className="flex flex-col items-center">
               <MessageCircle className="w-5 h-5" />
@@ -281,6 +290,9 @@ const ImmersiveReader: React.FC<ImmersiveReaderProps> = ({ post, onClose }) => {
                   </div>
                 </motion.div>
               )}
+              
+              {/* Comment section */}
+              <CommentSection postId={post.id} />
             </div>
           </ScrollArea>
         </div>

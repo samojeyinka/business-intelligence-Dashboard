@@ -90,7 +90,7 @@ export default function BlogPage() {
   return (
     <>
       <Head>
-        <title>Knowledge Nexus | Coact Ventures</title>
+        <title>Our Open Blog | Coact Ventures</title>
         <meta name="description" content="Explore our open contributions blog - a platform fostering collective knowledge through collaborative efforts." />
         <style>{`
           @keyframes shimmer {

@@ -25,7 +25,7 @@ const ContributionCta: React.FC = () => {
               </div>
               
               <h2 className="text-3xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-purple-500">
-                Contribute to Knowledge Nexus
+                Contribute to Our Open Blog
               </h2>
               
               <p className="text-gray-300 mb-6">
@@ -36,6 +36,7 @@ const ContributionCta: React.FC = () => {
               <div className="flex flex-wrap gap-4">
                 <Button 
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+                  onClick={() => window.location.href = '/blog/submit'}
                 >
                   <Edit className="w-4 h-4 mr-2" />
                   Submit Article

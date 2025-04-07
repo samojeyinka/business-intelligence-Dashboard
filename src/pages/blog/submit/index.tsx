@@ -1,0 +1,258 @@
+import { useState } from 'react';
+import Head from 'next/head';
+import { useRouter } from 'next/router';
+import { motion } from 'framer-motion';
+import { Edit, ArrowLeft, Tag, X } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Label } from '@/components/ui/label';
+import { Badge } from '@/components/ui/badge';
+import Header from '@/components/Header';
+import InteractiveBackground from '@/components/InteractiveBackground';
+import { blogTags } from '@/lib/mockBlogData';
+
+export default function SubmitArticlePage() {
+  const router = useRouter();
+  const [formData, setFormData] = useState({
+    title: '',
+    excerpt: '',
+    content: '',
+    coverImage: '',
+  });
+  const [selectedTags, setSelectedTags] = useState<string[]>([]);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const [errors, setErrors] = useState<Record<string, string>>({});
+
+  // Handle input changes
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
+    const { name, value } = e.target;
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+    
+    // Clear error when user types
+    if (errors[name]) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors[name];
+        return newErrors;
+      });
+    }
+  };
+
+  // Handle tag selection
+  const toggleTag = (tag: string) => {
+    setSelectedTags(prev => 
+      prev.includes(tag) 
+        ? prev.filter(t => t !== tag) 
+        : [...prev, tag]
+    );
+  };
+
+  // Validate form
+  const validateForm = () => {
+    const newErrors: Record<string, string> = {};
+    
+    if (!formData.title.trim()) {
+      newErrors.title = 'Title is required';
+    }
+    
+    if (!formData.excerpt.trim()) {
+      newErrors.excerpt = 'Brief description is required';
+    }
+    
+    if (!formData.content.trim()) {
+      newErrors.content = 'Content is required';
+    } else if (formData.content.trim().length < 100) {
+      newErrors.content = 'Content should be at least 100 characters';
+    }
+    
+    if (selectedTags.length === 0) {
+      newErrors.tags = 'Please select at least one tag';
+    }
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  // Handle form submission
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
+    if (!validateForm()) return;
+    
+    setIsSubmitting(true);
+    
+    try {
+      // In a real app, this would be an API call
+      // For now, we'll just simulate a submission
+      await new Promise(resolve => setTimeout(resolve, 1500));
+      
+      // Redirect to success page
+      router.push('/blog/submit/success');
+    } catch (error) {
+      console.error('Error submitting article:', error);
+      setErrors({ submit: 'Failed to submit article. Please try again.' });
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  return (
+    <>
+      <Head>
+        <title>Submit Article | Our Open Blog</title>
+        <meta name="description" content="Share your knowledge and insights with our community by submitting an article to Our Open Blog." />
+      </Head>
+      
+      <div className="min-h-screen bg-black text-white relative">
+        <InteractiveBackground intensity={0.3} />
+        
+        {/* Header */}
+        <Header />
+        
+        {/* Main content */}
+        <main className="pt-24 pb-20 px-4">
+          <div className="max-w-3xl mx-auto">
+            <Button
+              variant="ghost"
+              size="sm"
+              className="mb-6 text-zinc-400 hover:text-white"
+              onClick={() => router.push('/blog')}
+            >
+              <ArrowLeft className="w-4 h-4 mr-2" />
+              Back to Blog
+            </Button>
+            
+            <motion.div
+              initial={{ opacity: 0, y: 20 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.5 }}
+            >
+              <div className="flex items-center gap-3 mb-6">
+                <div className="p-2 rounded-full bg-purple-500/20 text-purple-300">
+                  <Edit className="w-5 h-5" />
+                </div>
+                <h1 className="text-3xl font-bold">Submit Your Article</h1>
+              </div>
+              
+              <p className="text-zinc-400 mb-8">
+                Share your knowledge, insights, and perspectives with our community. 
+                Your contribution helps build our collective understanding.
+              </p>
+              
+              <form onSubmit={handleSubmit} className="space-y-6">
+                <div className="space-y-2">
+                  <Label htmlFor="title">Article Title</Label>
+                  <Input
+                    id="title"
+                    name="title"
+                    placeholder="Enter a compelling title"
+                    value={formData.title}
+                    onChange={handleChange}
+                    className={`bg-zinc-900/50 border ${errors.title ? 'border-red-500' : 'border-zinc-700'}`}
+                  />
+                  {errors.title && <p className="text-red-500 text-sm mt-1">{errors.title}</p>}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="excerpt">Brief Description</Label>
+                  <Textarea
+                    id="excerpt"
+                    name="excerpt"
+                    placeholder="Write a short description (1-2 sentences)"
+                    value={formData.excerpt}
+                    onChange={handleChange}
+                    className={`bg-zinc-900/50 border ${errors.excerpt ? 'border-red-500' : 'border-zinc-700'} min-h-[80px]`}
+                  />
+                  {errors.excerpt && <p className="text-red-500 text-sm mt-1">{errors.excerpt}</p>}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="content">Article Content</Label>
+                  <Textarea
+                    id="content"
+                    name="content"
+                    placeholder="Write your article here..."
+                    value={formData.content}
+                    onChange={handleChange}
+                    className={`bg-zinc-900/50 border ${errors.content ? 'border-red-500' : 'border-zinc-700'} min-h-[300px]`}
+                  />
+                  {errors.content && <p className="text-red-500 text-sm mt-1">{errors.content}</p>}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="coverImage">Cover Image URL (optional)</Label>
+                  <Input
+                    id="coverImage"
+                    name="coverImage"
+                    placeholder="https://example.com/your-image.jpg"
+                    value={formData.coverImage}
+                    onChange={handleChange}
+                    className="bg-zinc-900/50 border border-zinc-700"
+                  />
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2">
+                    <Tag className="w-4 h-4 text-zinc-400" />
+                    <Label>Tags</Label>
+                  </div>
+                  
+                  {errors.tags && <p className="text-red-500 text-sm mt-1">{errors.tags}</p>}
+                  
+                  <div className="flex flex-wrap gap-2 mt-2">
+                    {selectedTags.map(tag => (
+                      <Badge 
+                        key={tag} 
+                        className="bg-purple-600/30 hover:bg-purple-600/40 text-purple-200 cursor-pointer"
+                        onClick={() => toggleTag(tag)}
+                      >
+                        {tag}
+                        <X className="w-3 h-3 ml-1" />
+                      </Badge>
+                    ))}
+                  </div>
+                  
+                  <div className="mt-2 p-3 bg-zinc-900/50 border border-zinc-800 rounded-md">
+                    <p className="text-sm text-zinc-400 mb-2">Select relevant tags for your article:</p>
+                    <div className="flex flex-wrap gap-2">
+                      {blogTags.map(tag => (
+                        <Badge 
+                          key={tag} 
+                          variant={selectedTags.includes(tag) ? "default" : "outline"}
+                          className={`cursor-pointer ${selectedTags.includes(tag) ? 'bg-purple-600/30 hover:bg-purple-600/40 text-purple-200' : 'text-zinc-400 hover:text-white'}`}
+                          onClick={() => toggleTag(tag)}
+                        >
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+                
+                {errors.submit && (
+                  <div className="p-3 bg-red-900/20 border border-red-900/30 rounded-md text-red-300">
+                    {errors.submit}
+                  </div>
+                )}
+                
+                <div className="pt-4">
+                  <Button 
+                    type="submit" 
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+                    disabled={isSubmitting}
+                  >
+                    {isSubmitting ? 'Submitting...' : 'Submit Article'}
+                  </Button>
+                </div>
+              </form>
+            </motion.div>
+          </div>
+        </main>
+      </div>
+    </>
+  );
+}

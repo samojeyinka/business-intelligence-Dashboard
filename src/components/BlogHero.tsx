@@ -119,7 +119,7 @@ const BlogHero: React.FC<BlogHeroProps> = ({ contributorCount, articleCount }) =
           
           <h1 className="text-5xl md:text-7xl font-bold mb-6">
             <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-400 via-purple-500 to-pink-400">
-              Knowledge Nexus
+              Our Open Blog
             </span>
           </h1>
           
