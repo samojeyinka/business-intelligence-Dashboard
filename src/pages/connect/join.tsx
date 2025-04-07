@@ -13,8 +13,11 @@ import FloatingElements from '@/components/FloatingElements';
 import VentureParticleEffect from '@/components/VentureParticleEffect';
 import Nova from '@/components/Nova';
 import { ArrowLeft, Check, Users } from 'lucide-react';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '@/firebase-config';
 
 const JoinVenturePage = () => {
+
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -27,6 +30,8 @@ const JoinVenturePage = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [submitError, setSubmitError] = useState<string | null>(null);
+
 
   // Track mouse position for parallax effects
   const handleMouseMove = (e: React.MouseEvent) => {
@@ -100,20 +105,48 @@ const JoinVenturePage = () => {
     return isValid;
   };
 
+  // const handleSubmit = async (e: React.FormEvent) => {
+  //   e.preventDefault();
+    
+  //   if (validateForm()) {
+  //     setIsSubmitting(true);
+      
+  //     // Simulate API call
+  //     setTimeout(() => {
+  //       setIsSubmitting(false);
+  //       setIsSubmitted(true);
+        
+  //       // In a real app, you would submit the form data to your API here
+  //       console.log('Form submitted:', formData);
+  //     }, 2000);
+  //   }
+  // };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     if (validateForm()) {
       setIsSubmitting(true);
       
-      // Simulate API call
-      setTimeout(() => {
-        setIsSubmitting(false);
-        setIsSubmitted(true);
+      try {
+        // Add a new document to the "join-requests" collection
+        const docRef = await addDoc(collection(db, "join-requests"), {
+          name: formData.name,
+          email: formData.email,
+          interests: formData.interests, // This will be saved as an array
+          message: formData.message,
+          createdAt: new Date() // Add a timestamp
+        });
         
-        // In a real app, you would submit the form data to your API here
-        console.log('Form submitted:', formData);
-      }, 2000);
+        console.log("Document written with ID: ", docRef.id);
+        setIsSubmitted(true);
+        setSubmitError("sth went wrong");
+      } catch (error) {
+        console.error("Error adding document: ", error);
+        setSubmitError("Failed to submit your request. Please try again later.");
+      } finally {
+        setIsSubmitting(false);
+      }
     }
   };
 
@@ -214,6 +247,7 @@ const JoinVenturePage = () => {
             </motion.div>
           ) : (
             <Card className="border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm overflow-hidden relative">
+              {submitError && <p className="text-red-500 text-sm">{submitError}</p>}
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 <div className="space-y-2">
                   <Label htmlFor="name" className="text-sm font-medium">

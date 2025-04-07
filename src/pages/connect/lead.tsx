@@ -17,6 +17,9 @@ import FloatingElements from '@/components/FloatingElements';
 import VentureParticleEffect from '@/components/VentureParticleEffect';
 import Nova from '@/components/Nova';
 import { ArrowLeft, ArrowRight, Check, Rocket, Sparkles, Star } from 'lucide-react';
+import { db } from '@/firebase-config';
+import { addDoc, collection } from 'firebase/firestore';
+
 
 type Question = {
   id: string;
@@ -224,22 +227,40 @@ const LeadVenturePage = () => {
       });
     }
   };
-
   const handleSubmit = async () => {
     if (validateStep(currentStep)) {
       setIsSubmitting(true);
       
-      // Simulate API call
-      setTimeout(() => {
+      try {
+
+        const submissionData = {
+          ...formData,
+          expertise: formData.expertise || [],
+          ventureInterest: formData.ventureInterest || [],
+
+          submittedAt: new Date(),
+          status: 'pending'
+        };
+        
+ 
+        const docRef = await addDoc(collection(db, 'lead-requests'), submissionData);
+        
+     
         setIsSubmitting(false);
         setIsSubmitted(true);
+        console.log('Form submitted to Firestore with ID:', docRef.id);
         
-        // In a real app, you would submit the form data to your API here
-        console.log('Form submitted:', formData);
-      }, 2000);
+      } catch (error) {
+      
+        console.error('Error submitting form:', error);
+        setIsSubmitting(false);
+        setErrors(prev => ({
+          ...prev,
+          submit: 'Failed to submit form. Please try again.'
+        }));
+      }
     }
   };
-
   const renderQuestion = (question: Question) => {
     switch (question.type) {
       case 'text':

@@ -13,6 +13,8 @@ import FloatingElements from '@/components/FloatingElements';
 import VentureParticleEffect from '@/components/VentureParticleEffect';
 import Nova from '@/components/Nova';
 import { ArrowLeft, Check, MessageCircle } from 'lucide-react';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '@/firebase-config';
 
 const AskQuestionPage = () => {
   const router = useRouter();
@@ -103,14 +105,30 @@ const AskQuestionPage = () => {
     if (validateForm()) {
       setIsSubmitting(true);
       
-      // Simulate API call
-      setTimeout(() => {
+      try {
+        const questionData = {
+          ...formData,
+          submittedAt: new Date(),
+          status: 'unread'
+        };
+        
+    
+        const docRef = await addDoc(collection(db, 'questions'), questionData);
+        
+    
         setIsSubmitting(false);
         setIsSubmitted(true);
+        console.log('Question submitted to Firestore with ID:', docRef.id);
         
-        // In a real app, you would submit the form data to your API here
-        console.log('Form submitted:', formData);
-      }, 2000);
+      } catch (error) {
+      
+        console.error('Error submitting question:', error);
+        setIsSubmitting(false);
+        setErrors(prev => ({
+          ...prev,
+          submit: 'Failed to submit question. Please try again.'
+        }));
+      }
     }
   };
 
