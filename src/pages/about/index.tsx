@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import DynamicCursor from '@/components/DynamicCursor';
 import InteractiveBackground from '@/components/InteractiveBackground';
+import EcosystemSection from '@/components/EcosystemSection';
 
 // Define the sections for the interactive journey
 const journeySections = [
@@ -395,6 +396,9 @@ export default function AboutPage() {
         
         {/* Values game */}
         <ValuesGame />
+        
+        {/* Ecosystem section */}
+        <EcosystemSection />
         
         {/* Team showcase */}
         <TeamShowcase />
