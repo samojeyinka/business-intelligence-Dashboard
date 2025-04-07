@@ -94,7 +94,7 @@ const InteractiveMission = () => {
         </h3>
         <p className="text-lg text-gray-300">
           To become the foundational infrastructure for startup creation across Africa—and eventually, globally.
-          We want Coact to be the platform people return to when they want to create again, grow again, learn again.
+          The platform where people return when they're ready to create again, grow again, learn again.
         </p>
       </div>
     </div>
