@@ -35,13 +35,15 @@ export function sanitizeUrl(url: string): string {
 
 // Sanitize an object's string properties
 export function sanitizeObject<T extends Record<string, any>>(obj: T): T {
-  const result = { ...obj };
+  const result = { ...obj } as T;
   
   for (const key in result) {
     if (typeof result[key] === 'string') {
-      result[key] = sanitizeText(result[key]);
+      // Use type assertion to handle the string case
+      result[key] = sanitizeText(result[key] as string) as any;
     } else if (typeof result[key] === 'object' && result[key] !== null) {
-      result[key] = sanitizeObject(result[key]);
+      // Use type assertion for nested objects
+      result[key] = sanitizeObject(result[key] as Record<string, any>) as any;
     }
   }
   

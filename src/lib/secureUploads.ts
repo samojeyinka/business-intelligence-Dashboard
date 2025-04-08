@@ -2,6 +2,25 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import path from 'path';
 import crypto from 'crypto';
 
+// Extend NextApiRequest to include files property
+interface ExtendedNextApiRequest extends NextApiRequest {
+  files?: {
+    [fieldname: string]: {
+      mimetype: string;
+      size: number;
+      originalname: string;
+    }[] | {
+      mimetype: string;
+      size: number;
+      originalname: string;
+    }
+  } | {
+    mimetype: string;
+    size: number;
+    originalname: string;
+  }[];
+}
+
 // Allowed file types and their corresponding MIME types
 const ALLOWED_FILE_TYPES = {
   'image/jpeg': ['.jpg', '.jpeg'],
@@ -60,9 +79,9 @@ export function generateSecureFilename(originalFilename: string): string {
 
 // Middleware for handling file uploads
 export function withFileUploadValidation(
-  handler: (req: NextApiRequest, res: NextApiResponse) => Promise<void> | void
+  handler: (req: ExtendedNextApiRequest, res: NextApiResponse) => Promise<void> | void
 ) {
-  return async (req: NextApiRequest, res: NextApiResponse) => {
+  return async (req: ExtendedNextApiRequest, res: NextApiResponse) => {
     // Check if request contains files
     if (req.files) {
       // Validate each file
