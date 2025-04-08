@@ -651,7 +651,6 @@ export default function SubmitArticlePage() {
           )}
         </DialogContent>
       </Dialog>
-      </div>
     </>
   );
 }
