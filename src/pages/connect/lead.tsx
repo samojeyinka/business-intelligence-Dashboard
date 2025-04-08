@@ -175,7 +175,7 @@ const LeadVenturePage = () => {
       questions: [
         {
           id: 'thoughtQuestion',
-          question: 'In a world of increasing complexity and interconnected systems, how do you approach understanding and solving problems that have no clear solution? Describe your thought process and provide an example of how you've navigated ambiguity in the past.',
+          question: 'How do you approach complex problems with no clear solutions? Describe your thought process and provide an example.',
           type: 'textarea',
           required: true
         }
