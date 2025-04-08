@@ -1,4 +1,4 @@
-import React, { useState, useRef, memo } from 'react';
+import React, { useState, useRef, memo, useCallback } from 'react';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/router';
 import { VentureWithRelations, VentureStage } from '@/types/venture';
@@ -36,10 +36,16 @@ const VentureCard3D: React.FC<VentureCard3DProps> = memo(({ venture, index }) =>
   const [rotateX, setRotateX] = useState(0);
   const [rotateY, setRotateY] = useState(0);
   const [glowPosition, setGlowPosition] = useState({ x: 50, y: 50 });
-
-  // Throttled mouse move handler to improve performance
-  const handleMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
+  
+  // Heavily throttled mouse move handler to improve performance
+  const lastMoveRef = useRef<number>(0);
+  
+  const handleMouseMove = useCallback((e: React.MouseEvent<HTMLDivElement>) => {
     if (!cardRef.current || !isHovered) return;
+    
+    const now = Date.now();
+    if (now - lastMoveRef.current < 50) return; // Only process every 50ms
+    lastMoveRef.current = now;
     
     const rect = cardRef.current.getBoundingClientRect();
     const centerX = rect.left + rect.width / 2;
@@ -50,23 +56,27 @@ const VentureCard3D: React.FC<VentureCard3DProps> = memo(({ venture, index }) =>
     
     // Calculate rotation based on mouse position relative to card center
     // Reduced rotation amount for better performance
-    const rotateXValue = ((mouseY - centerY) / (rect.height / 2)) * 3;
-    const rotateYValue = ((centerX - mouseX) / (rect.width / 2)) * 3;
+    const rotateXValue = ((mouseY - centerY) / (rect.height / 2)) * 2;
+    const rotateYValue = ((centerX - mouseX) / (rect.width / 2)) * 2;
     
     setRotateX(rotateXValue);
     setRotateY(rotateYValue);
     
-    // Calculate glow position
+    // Calculate glow position - simplified
     const glowX = ((mouseX - rect.left) / rect.width) * 100;
     const glowY = ((mouseY - rect.top) / rect.height) * 100;
     setGlowPosition({ x: glowX, y: glowY });
-  };
+  }, [isHovered]);
 
-  const resetCardRotation = () => {
+  const resetCardRotation = useCallback(() => {
     setIsHovered(false);
     setRotateX(0);
     setRotateY(0);
-  };
+  }, []);
+  
+  const handleCardClick = useCallback(() => {
+    router.push(`/ventures/${venture.slug}`);
+  }, [router, venture.slug]);
 
   return (
     <motion.div
@@ -76,13 +86,13 @@ const VentureCard3D: React.FC<VentureCard3DProps> = memo(({ venture, index }) =>
       exit={{ opacity: 0 }}
       transition={{ 
         duration: 0.3, 
-        delay: Math.min(index * 0.05, 0.3), // Cap the delay to improve loading time
+        delay: Math.min(index * 0.03, 0.2), // Reduced delay for faster loading
       }}
       className="w-full"
       onMouseMove={handleMouseMove}
       onMouseLeave={resetCardRotation}
       onMouseEnter={() => setIsHovered(true)}
-      onClick={() => router.push(`/ventures/${venture.slug}`)}
+      onClick={handleCardClick}
     >
       <motion.div
         animate={{
@@ -99,18 +109,12 @@ const VentureCard3D: React.FC<VentureCard3DProps> = memo(({ venture, index }) =>
         <Card 
           className="relative overflow-hidden border border-zinc-800 bg-zinc-900/50 backdrop-blur-sm cursor-pointer"
         >
-          {/* Simplified glow effect - only show on hover */}
+          {/* Simplified glow effect - only show on hover and with reduced complexity */}
           {isHovered && (
             <div 
-              className="absolute inset-0 opacity-15 pointer-events-none z-0"
+              className="absolute inset-0 opacity-10 pointer-events-none z-0"
               style={{
-                background: `radial-gradient(circle at ${glowPosition.x}% ${glowPosition.y}%, ${
-                  venture.stage === 'IDEA' ? '#a855f7' : 
-                  venture.stage === 'PROTOTYPE' ? '#3b82f6' : 
-                  venture.stage === 'MVP' ? '#22c55e' : 
-                  venture.stage === 'GROWTH' ? '#f59e0b' : 
-                  '#ef4444'
-                }, transparent 70%)`,
+                background: `radial-gradient(circle at ${glowPosition.x}% ${glowPosition.y}%, ${venture.stage === 'IDEA' ? '#a855f7' : venture.stage === 'PROTOTYPE' ? '#3b82f6' : venture.stage === 'MVP' ? '#22c55e' : venture.stage === 'GROWTH' ? '#f59e0b' : '#ef4444'}, transparent 70%)`,
               }}
             />
           )}
@@ -190,7 +194,7 @@ const VentureCard3D: React.FC<VentureCard3DProps> = memo(({ venture, index }) =>
             
             <div className="mt-6 flex items-center justify-between">
               <div className="flex -space-x-2">
-                {venture.founders.map((founder) => (
+                {venture.founders.slice(0, 3).map((founder) => (
                   <div key={founder.id} className="h-8 w-8 rounded-full bg-zinc-700 border-2 border-zinc-900 overflow-hidden">
                     {founder.image ? (
                       <img src={founder.image} alt={founder.name || 'Founder'} className="h-full w-full object-cover" />

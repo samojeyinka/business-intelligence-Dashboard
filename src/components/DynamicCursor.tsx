@@ -1,12 +1,17 @@
-import React, { useEffect, useState, useCallback } from 'react';
+import React, { useEffect, useState, useCallback, useRef } from 'react';
 import { motion } from 'framer-motion';
 
 const DynamicCursor: React.FC = () => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isPointer, setIsPointer] = useState(false);
+  const lastMoveTimeRef = useRef<number>(0);
 
-  // Combined handler for both mouse position and pointer detection
+  // Heavily throttled handler for both mouse position and pointer detection
   const handleMouseMove = useCallback((e: MouseEvent) => {
+    const now = Date.now();
+    if (now - lastMoveTimeRef.current < 50) return; // Only update every 50ms
+    lastMoveTimeRef.current = now;
+    
     setMousePosition({ x: e.clientX, y: e.clientY });
     
     // Check if the cursor is over a clickable element
@@ -56,4 +61,4 @@ const DynamicCursor: React.FC = () => {
   );
 };
 
-export default DynamicCursor;
+export default React.memo(DynamicCursor);

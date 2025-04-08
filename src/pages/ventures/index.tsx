@@ -1,4 +1,4 @@
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense, lazy } from 'react';
 import { useRouter } from 'next/router';
 import { motion, AnimatePresence } from 'framer-motion';
 import { fetchVentures } from '@/lib/api';
@@ -11,13 +11,15 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { ChevronUp, ChevronDown, Search, Filter, ArrowUpRight, Star, Users, Clock, Sparkles, Zap } from 'lucide-react';
 import Header from '@/components/Header';
-import DynamicCursor from '@/components/DynamicCursor';
-import VentureParticleEffect from '@/components/VentureParticleEffect';
-import VentureCard3D from '@/components/VentureCard3D';
-import FuturisticSearch from '@/components/FuturisticSearch';
-import FuturisticTabs from '@/components/FuturisticTabs';
-import FloatingElements from '@/components/FloatingElements';
-import Nova from '@/components/Nova';
+
+// Lazy load heavy components
+const DynamicCursor = lazy(() => import('@/components/DynamicCursor'));
+const VentureParticleEffect = lazy(() => import('@/components/VentureParticleEffect'));
+const VentureCard3D = lazy(() => import('@/components/VentureCard3D'));
+const FuturisticSearch = lazy(() => import('@/components/FuturisticSearch'));
+const FuturisticTabs = lazy(() => import('@/components/FuturisticTabs'));
+const FloatingElements = lazy(() => import('@/components/FloatingElements'));
+const Nova = lazy(() => import('@/components/Nova'));
 
 const stageColors: Record<VentureStage, string> = {
   IDEA: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
@@ -29,12 +31,20 @@ const stageColors: Record<VentureStage, string> = {
 
 const stageIcons: Record<VentureStage, React.ReactNode> = {
   IDEA: <Sparkles className="w-3 h-3" />,
-  PROTOTYPE: <div className="w-3 h-3 rounded-full bg-blue-500 animate-pulse" />,
+  PROTOTYPE: <div className="w-3 h-3 rounded-full bg-blue-500" />,
   MVP: <div className="w-3 h-3 rounded-sm bg-green-500" />,
-  GROWTH: <div className="w-3 h-3 rounded-md bg-amber-500 animate-ping animate-duration-[3000ms]" />,
+  GROWTH: <div className="w-3 h-3 rounded-md bg-amber-500" />,
   SCALE: <Star className="w-3 h-3 text-red-500" />,
 };
 
+// Simple loading fallback component
+const LoadingFallback = () => (
+  <div className="flex items-center justify-center p-4">
+    <div className="h-6 w-6 rounded-full border-2 border-purple-500 border-t-transparent animate-spin" />
+  </div>
+);
+
+// Simplified VentureCard for better performance
 const VentureCard = ({ venture }: { venture: VentureWithRelations }) => {
   const router = useRouter();
   const [isHovered, setIsHovered] = useState(false);
@@ -53,9 +63,6 @@ const VentureCard = ({ venture }: { venture: VentureWithRelations }) => {
         onMouseLeave={() => setIsHovered(false)}
         onClick={() => router.push(`/ventures/${venture.slug}`)}
       >
-        {/* Animated gradient background */}
-        <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-purple-900/20 opacity-0 transition-opacity duration-500 group-hover:opacity-100" />
-        
         {/* Venture content */}
         <div className="relative z-10 p-6">
           <div className="flex items-start justify-between">
@@ -91,12 +98,6 @@ const VentureCard = ({ venture }: { venture: VentureWithRelations }) => {
                       Seeking Collaborators
                     </Badge>
                   )}
-                  {venture.isCoactProduct && (
-                    <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/20 px-2 py-0 text-xs">
-                      <Zap className="mr-1 h-3 w-3" />
-                      Coact Startup
-                    </Badge>
-                  )}
                 </div>
               </div>
             </div>
@@ -104,10 +105,6 @@ const VentureCard = ({ venture }: { venture: VentureWithRelations }) => {
               <Badge variant="secondary" className="flex items-center gap-1">
                 <ChevronUp className="h-3 w-3" />
                 {venture._count.upvotes}
-              </Badge>
-              <Badge variant="secondary" className="flex items-center gap-1">
-                <Clock className="h-3 w-3" />
-                {new Date(venture.createdAt).toLocaleDateString()}
               </Badge>
             </div>
           </div>
@@ -129,7 +126,7 @@ const VentureCard = ({ venture }: { venture: VentureWithRelations }) => {
           
           <div className="mt-6 flex items-center justify-between">
             <div className="flex -space-x-2">
-              {venture.founders.map((founder) => (
+              {venture.founders.slice(0, 3).map((founder) => (
                 <div key={founder.id} className="h-8 w-8 rounded-full bg-zinc-700 border-2 border-zinc-900 overflow-hidden">
                   {founder.image ? (
                     <img src={founder.image} alt={founder.name || 'Founder'} className="h-full w-full object-cover" />
@@ -140,11 +137,6 @@ const VentureCard = ({ venture }: { venture: VentureWithRelations }) => {
                   )}
                 </div>
               ))}
-              {venture.teamSize > venture.founders.length && (
-                <div className="flex h-8 w-8 items-center justify-center rounded-full bg-zinc-800 border-2 border-zinc-900 text-xs font-medium text-white">
-                  +{venture.teamSize - venture.founders.length}
-                </div>
-              )}
             </div>
             
             <Button size="sm" variant="ghost" className="gap-1 text-purple-400 hover:text-purple-300 hover:bg-purple-950/30">
@@ -153,19 +145,6 @@ const VentureCard = ({ venture }: { venture: VentureWithRelations }) => {
             </Button>
           </div>
         </div>
-        
-        {/* Animated border on hover */}
-        <AnimatePresence>
-          {isHovered && (
-            <motion.div 
-              className="absolute inset-0 z-0 rounded-lg border border-purple-500/50"
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              exit={{ opacity: 0 }}
-              transition={{ duration: 0.2 }}
-            />
-          )}
-        </AnimatePresence>
       </Card>
     </motion.div>
   );
@@ -187,9 +166,14 @@ const VenturesPage = () => {
     limit: 10,
   });
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const lastMoveTimeRef = useState<number>(0);
 
-  // Track mouse position for parallax effects
+  // Throttled mouse position tracking for parallax effects
   const handleMouseMove = (e: React.MouseEvent) => {
+    const now = Date.now();
+    if (now - lastMoveTimeRef[0] < 100) return; // Only update every 100ms
+    lastMoveTimeRef[0] = now;
+    
     const { clientX, clientY } = e;
     const x = (clientX / window.innerWidth) - 0.5;
     const y = (clientY / window.innerHeight) - 0.5;
@@ -267,14 +251,26 @@ const VenturesPage = () => {
 
   return (
     <div className="min-h-screen bg-black text-white overflow-hidden" onMouseMove={handleMouseMove}>
-      {/* Interactive background */}
-      <VentureParticleEffect />
+      {/* Interactive background - lazy loaded */}
+      {isMounted && (
+        <Suspense fallback={null}>
+          <VentureParticleEffect />
+        </Suspense>
+      )}
       
-      {/* Floating elements */}
-      <FloatingElements count={12} />
+      {/* Floating elements - lazy loaded with reduced count */}
+      {isMounted && (
+        <Suspense fallback={null}>
+          <FloatingElements count={6} />
+        </Suspense>
+      )}
       
-      {/* Dynamic cursor (client-side only) */}
-      {isMounted && <DynamicCursor />}
+      {/* Dynamic cursor (client-side only) - lazy loaded */}
+      {isMounted && (
+        <Suspense fallback={null}>
+          <DynamicCursor />
+        </Suspense>
+      )}
       
       <Header />
       
@@ -288,8 +284,8 @@ const VenturesPage = () => {
         >
           <motion.div
             animate={{
-              x: mousePosition.x * -20,
-              y: mousePosition.y * -20,
+              x: mousePosition.x * -10, // Reduced movement
+              y: mousePosition.y * -10,
             }}
             transition={{ type: 'spring', damping: 25 }}
             className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[120%] bg-gradient-to-br from-purple-900/20 via-blue-900/10 to-transparent rounded-full blur-3xl pointer-events-none"
@@ -308,8 +304,8 @@ const VenturesPage = () => {
             <motion.span 
               className="inline-block relative"
               animate={{
-                x: mousePosition.x * 10,
-                y: mousePosition.y * 10,
+                x: mousePosition.x * 5, // Reduced movement
+                y: mousePosition.y * 5,
               }}
               transition={{ type: 'spring', damping: 25 }}
             >
@@ -327,18 +323,26 @@ const VenturesPage = () => {
           </motion.p>
         </motion.div>
 
-        {/* Search and filters */}
-        <FuturisticSearch 
-          onSearch={handleSearch}
-          onFilterChange={handleFilterChange}
-          sectors={sectors}
-        />
+        {/* Search and filters - lazy loaded */}
+        {isMounted && (
+          <Suspense fallback={<LoadingFallback />}>
+            <FuturisticSearch 
+              onSearch={handleSearch}
+              onFilterChange={handleFilterChange}
+              sectors={sectors}
+            />
+          </Suspense>
+        )}
 
-        {/* Stage tabs */}
-        <FuturisticTabs 
-          activeStage={activeStage}
-          onStageChange={setActiveStage}
-        />
+        {/* Stage tabs - lazy loaded */}
+        {isMounted && (
+          <Suspense fallback={<LoadingFallback />}>
+            <FuturisticTabs 
+              activeStage={activeStage}
+              onStageChange={setActiveStage}
+            />
+          </Suspense>
+        )}
 
         {/* Ventures grid */}
         <motion.div
@@ -354,22 +358,12 @@ const VenturesPage = () => {
                   key={i}
                   initial={{ opacity: 0, y: 20 }}
                   animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: i * 0.1 }}
+                  transition={{ duration: 0.3, delay: Math.min(i * 0.05, 0.2) }} // Reduced delay
                 >
                   <Card className="border border-zinc-800 bg-zinc-900/50 h-64 overflow-hidden relative">
                     <div className="h-full flex items-center justify-center">
                       <div className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 animate-spin" />
                     </div>
-                    
-                    {/* Animated gradient border */}
-                    <div 
-                      className="absolute inset-0 rounded-lg opacity-30"
-                      style={{
-                        background: 'linear-gradient(90deg, transparent, rgba(139, 92, 246, 0.5), transparent)',
-                        backgroundSize: '200% 100%',
-                        animation: 'shimmer 2s infinite',
-                      }}
-                    />
                   </Card>
                 </motion.div>
               ))}
@@ -378,7 +372,13 @@ const VenturesPage = () => {
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               <AnimatePresence mode="wait">
                 {ventures.map((venture, index) => (
-                  <VentureCard3D key={venture.id} venture={venture} index={index} />
+                  isMounted ? (
+                    <Suspense key={venture.id} fallback={<VentureCard venture={venture} />}>
+                      <VentureCard3D venture={venture} index={index} />
+                    </Suspense>
+                  ) : (
+                    <VentureCard key={venture.id} venture={venture} />
+                  )
                 ))}
               </AnimatePresence>
             </div>
@@ -389,14 +389,6 @@ const VenturesPage = () => {
               animate={{ opacity: 1, scale: 1 }}
               transition={{ duration: 0.5, type: 'spring' }}
             >
-              <motion.div 
-                className="absolute inset-0 bg-gradient-to-r from-purple-900/10 via-transparent to-blue-900/10 rounded-lg"
-                animate={{
-                  opacity: [0.5, 0.8, 0.5],
-                }}
-                transition={{ duration: 4, repeat: Infinity }}
-              />
-              
               <h3 className="text-2xl font-semibold text-zinc-300">No ventures found</h3>
               <p className="mt-2 text-zinc-400">
                 Try adjusting your filters or search terms
@@ -497,37 +489,15 @@ const VenturesPage = () => {
             </motion.div>
           )}
 
-          {/* Submit your venture CTA */}
+          {/* Submit your venture CTA - simplified */}
           <motion.div
             initial={{ opacity: 0, y: 40 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.7, delay: 0.3, type: 'spring' }}
             className="mt-20 rounded-lg border border-purple-500/20 bg-gradient-to-br from-zinc-900 via-purple-950/20 to-zinc-900 p-8 text-center relative overflow-hidden"
           >
-            {/* Animated background effect */}
-            <motion.div 
-              className="absolute inset-0 bg-gradient-to-r from-purple-900/0 via-purple-900/20 to-purple-900/0"
-              animate={{
-                x: [-100, 400],
-                opacity: [0, 1, 0],
-              }}
-              transition={{ 
-                repeat: Infinity, 
-                duration: 5,
-                ease: 'linear',
-              }}
-            />
-            
             <motion.div 
               className="relative z-10"
-              animate={{
-                y: [0, -5, 0],
-              }}
-              transition={{ 
-                repeat: Infinity, 
-                duration: 5,
-                ease: 'easeInOut',
-              }}
             >
               <h2 className="text-3xl font-bold text-white mb-2">
                 Have a venture to showcase?
@@ -545,12 +515,6 @@ const VenturesPage = () => {
                   onClick={() => router.push('/ventures/submit')}
                 >
                   <span className="relative z-10">Submit Your Venture</span>
-                  <motion.div 
-                    className="absolute inset-0 bg-gradient-to-r from-pink-600 to-purple-600"
-                    initial={{ x: '-100%' }}
-                    whileHover={{ x: 0 }}
-                    transition={{ duration: 0.4 }}
-                  />
                 </Button>
               </motion.div>
             </motion.div>
@@ -558,8 +522,12 @@ const VenturesPage = () => {
         </motion.div>
       </main>
       
-      {/* Nova AI Assistant */}
-      {isMounted && <Nova />}
+      {/* Nova AI Assistant - lazy loaded */}
+      {isMounted && (
+        <Suspense fallback={null}>
+          <Nova />
+        </Suspense>
+      )}
     </div>
   );
 };
