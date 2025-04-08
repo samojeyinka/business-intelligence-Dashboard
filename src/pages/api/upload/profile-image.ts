@@ -41,30 +41,40 @@ export default async function handler(req: NextApiRequest, res: NextApiResponse)
     });
 
     // Get the uploaded file
-    const file = files.file;
-    if (!file || Array.isArray(file)) {
-      return res.status(400).json({ error: 'No file uploaded or multiple files detected' });
+    const fileArray = files.file;
+    if (!fileArray) {
+      return res.status(400).json({ error: 'No file uploaded' });
+    }
+    
+    const file = Array.isArray(fileArray) ? fileArray[0] : fileArray;
+    
+    if (!file) {
+      return res.status(400).json({ error: 'No file uploaded' });
     }
 
     // Validate the file
     const validation = validateFile({
-      mimetype: file.mimetype || '',
-      size: file.size,
-      originalname: file.originalFilename || '',
+      mimetype: file.mimetype?.toString() || '',
+      size: file.size || 0,
+      originalname: file.originalFilename?.toString() || '',
     });
 
     if (!validation.valid) {
       // Remove the uploaded file
-      fs.unlinkSync(file.filepath);
+      if (file.filepath) {
+        fs.unlinkSync(file.filepath);
+      }
       return res.status(400).json({ error: validation.error });
     }
 
     // Generate a secure filename
-    const secureFilename = generateSecureFilename(file.originalFilename || 'unknown');
+    const secureFilename = generateSecureFilename(file.originalFilename?.toString() || 'unknown');
     const newFilePath = path.join(uploadsDir, secureFilename);
 
     // Rename the file
-    fs.renameSync(file.filepath, newFilePath);
+    if (file.filepath) {
+      fs.renameSync(file.filepath, newFilePath);
+    }
 
     // Return the file path that can be used in the frontend
     const publicPath = `/uploads/${secureFilename}`;
