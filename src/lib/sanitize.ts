@@ -30,6 +30,11 @@ export function sanitizeUrl(url: string): string {
     return '';
   }
   
+  // For profile URLs, ensure they start with http:// or https://
+  if (!/^https?:\/\//i.test(sanitized) && sanitized !== '') {
+    return `https://${sanitized}`;
+  }
+  
   return sanitized;
 }
 

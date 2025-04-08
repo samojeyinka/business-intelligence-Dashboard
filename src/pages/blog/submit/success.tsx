@@ -48,8 +48,12 @@ export default function SubmitSuccessPage() {
             
             <h1 className="text-2xl font-bold mb-4">Article Submitted Successfully!</h1>
             
-            <p className="text-zinc-400 mb-8">
+            <p className="text-zinc-400 mb-4">
               Thank you for your contribution to Our Open Blog. Your article has been received and will be reviewed by our team.
+            </p>
+            
+            <p className="text-zinc-400 mb-8">
+              Your article will be published with your author profile, and readers will be able to see your name, role, and connect with you through your profile link if provided.
             </p>
             
             <div className="flex items-center justify-center gap-2 p-3 rounded-lg bg-zinc-800/50 mb-8 text-zinc-400">

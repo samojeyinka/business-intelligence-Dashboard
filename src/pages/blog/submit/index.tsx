@@ -2,15 +2,17 @@ import { useState } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
-import { Edit, ArrowLeft, Tag, X } from 'lucide-react';
+import { Edit, ArrowLeft, Tag, X, User, Briefcase } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import Header from '@/components/Header';
 import InteractiveBackground from '@/components/InteractiveBackground';
 import { blogTags } from '@/lib/mockBlogData';
+import { sanitizeUrl } from '@/lib/sanitize';
 
 export default function SubmitArticlePage() {
   const router = useRouter();
@@ -19,18 +21,62 @@ export default function SubmitArticlePage() {
     excerpt: '',
     content: '',
     coverImage: '',
+    author: {
+      name: '',
+      role: '',
+      avatar: '',
+      profileUrl: ''
+    }
   });
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [avatarPreview, setAvatarPreview] = useState<string>('');
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value } = e.target;
-    setFormData(prev => ({
-      ...prev,
-      [name]: value
-    }));
+    
+    // Handle nested author fields
+    if (name.startsWith('author.')) {
+      const authorField = name.split('.')[1];
+      
+      // Special handling for profile URL
+      if (authorField === 'profileUrl') {
+        const sanitizedUrl = sanitizeUrl(value);
+        setFormData(prev => ({
+          ...prev,
+          author: {
+            ...prev.author,
+            [authorField]: sanitizedUrl
+          }
+        }));
+      } else if (authorField === 'avatar') {
+        const sanitizedUrl = sanitizeUrl(value);
+        setFormData(prev => ({
+          ...prev,
+          author: {
+            ...prev.author,
+            [authorField]: sanitizedUrl
+          }
+        }));
+        setAvatarPreview(sanitizedUrl);
+      } else {
+        setFormData(prev => ({
+          ...prev,
+          author: {
+            ...prev.author,
+            [authorField]: value
+          }
+        }));
+      }
+    } else {
+      // Handle regular fields
+      setFormData(prev => ({
+        ...prev,
+        [name]: value
+      }));
+    }
     
     // Clear error when user types
     if (errors[name]) {
@@ -67,6 +113,20 @@ export default function SubmitArticlePage() {
       newErrors.content = 'Content is required';
     } else if (formData.content.trim().length < 100) {
       newErrors.content = 'Content should be at least 100 characters';
+    }
+    
+    // Validate author information
+    if (!formData.author.name.trim()) {
+      newErrors['author.name'] = 'Author name is required';
+    }
+    
+    if (!formData.author.role.trim()) {
+      newErrors['author.role'] = 'Author role/title is required';
+    }
+    
+    // Avatar URL is optional, but if provided, validate it
+    if (formData.author.avatar && !formData.author.avatar.match(/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i)) {
+      newErrors['author.avatar'] = 'Please provide a valid image URL (jpg, png, gif, webp)';
     }
     
     if (selectedTags.length === 0) {
@@ -193,6 +253,89 @@ export default function SubmitArticlePage() {
                     onChange={handleChange}
                     className="bg-zinc-900/50 border border-zinc-700"
                   />
+                </div>
+                
+                {/* Author Information Section */}
+                <div className="space-y-4 p-4 border border-zinc-800 rounded-lg bg-zinc-900/30">
+                  <div className="flex items-center gap-2 mb-2">
+                    <User className="w-4 h-4 text-purple-400" />
+                    <h3 className="text-lg font-medium">Author Information</h3>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="space-y-2">
+                      <Label htmlFor="author.name">
+                        Name <span className="text-red-500">*</span>
+                      </Label>
+                      <Input
+                        id="author.name"
+                        name="author.name"
+                        placeholder="Your full name"
+                        value={formData.author.name}
+                        onChange={handleChange}
+                        className={`bg-zinc-900/50 border ${errors['author.name'] ? 'border-red-500' : 'border-zinc-700'}`}
+                      />
+                      {errors['author.name'] && <p className="text-red-500 text-sm mt-1">{errors['author.name']}</p>}
+                    </div>
+                    
+                    <div className="space-y-2">
+                      <Label htmlFor="author.role">
+                        Role/Title <span className="text-red-500">*</span>
+                      </Label>
+                      <div className="relative">
+                        <Briefcase className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 w-4 h-4" />
+                        <Input
+                          id="author.role"
+                          name="author.role"
+                          placeholder="e.g. Software Engineer, Product Designer"
+                          value={formData.author.role}
+                          onChange={handleChange}
+                          className={`bg-zinc-900/50 border pl-10 ${errors['author.role'] ? 'border-red-500' : 'border-zinc-700'}`}
+                        />
+                      </div>
+                      {errors['author.role'] && <p className="text-red-500 text-sm mt-1">{errors['author.role']}</p>}
+                    </div>
+                  </div>
+                  
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
+                    <div className="space-y-2">
+                      <Label htmlFor="author.avatar">Profile Picture URL (optional)</Label>
+                      <Input
+                        id="author.avatar"
+                        name="author.avatar"
+                        placeholder="https://example.com/your-avatar.jpg"
+                        value={formData.author.avatar}
+                        onChange={handleChange}
+                        className={`bg-zinc-900/50 border ${errors['author.avatar'] ? 'border-red-500' : 'border-zinc-700'}`}
+                      />
+                      {errors['author.avatar'] && <p className="text-red-500 text-sm mt-1">{errors['author.avatar']}</p>}
+                    </div>
+                    
+                    <div className="flex flex-col items-center justify-center pt-6">
+                      <Avatar className="h-16 w-16 border-2 border-purple-500/30">
+                        {avatarPreview ? (
+                          <AvatarImage src={avatarPreview} alt="Avatar preview" />
+                        ) : null}
+                        <AvatarFallback className="bg-purple-900/50 text-purple-200 text-lg">
+                          {formData.author.name ? formData.author.name.charAt(0).toUpperCase() : '?'}
+                        </AvatarFallback>
+                      </Avatar>
+                      <p className="text-xs text-zinc-500 mt-2">Preview</p>
+                    </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="author.profileUrl">Profile URL (optional)</Label>
+                    <Input
+                      id="author.profileUrl"
+                      name="author.profileUrl"
+                      placeholder="https://linkedin.com/in/yourprofile"
+                      value={formData.author.profileUrl}
+                      onChange={handleChange}
+                      className="bg-zinc-900/50 border border-zinc-700"
+                    />
+                    <p className="text-xs text-zinc-500">Your LinkedIn or personal website URL</p>
+                  </div>
                 </div>
                 
                 <div className="space-y-2">
