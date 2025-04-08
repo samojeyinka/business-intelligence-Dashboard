@@ -15,6 +15,7 @@ import Nova from '@/components/Nova';
 import { ArrowLeft, Check, Users } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/firebase-config';
+import ChatBox from '../ChatBox';
 
 const JoinVenturePage = () => {
 
@@ -351,7 +352,7 @@ const JoinVenturePage = () => {
       </main>
       
       {/* Nova AI Assistant */}
-      {isMounted && <Nova />}
+      {isMounted && <ChatBox />}
       
       {/* Add shimmer animation */}
       <style jsx global>{`

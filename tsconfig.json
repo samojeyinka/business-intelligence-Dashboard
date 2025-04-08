@@ -32,7 +32,7 @@
     "**/*.ts",
     "**/*.tsx",
     ".next/types/**/*.ts"
-  ],
+, "src/pages/api/chat.ts", "src/pages/api/gemini/index.ts"  ],
   "exclude": [
     "node_modules"
   ]

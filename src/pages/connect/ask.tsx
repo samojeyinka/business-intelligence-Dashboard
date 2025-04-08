@@ -11,10 +11,10 @@ import Header from '@/components/Header';
 import DynamicCursor from '@/components/DynamicCursor';
 import FloatingElements from '@/components/FloatingElements';
 import VentureParticleEffect from '@/components/VentureParticleEffect';
-import Nova from '@/components/Nova';
 import { ArrowLeft, Check, MessageCircle } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/firebase-config';
+import ChatBox from '../ChatBox';
 
 const AskQuestionPage = () => {
   const router = useRouter();
@@ -326,7 +326,7 @@ const AskQuestionPage = () => {
       </main>
       
       {/* Nova AI Assistant */}
-      {isMounted && <Nova />}
+      {isMounted && <ChatBox />}
       
       {/* Add shimmer animation */}
       <style jsx global>{`

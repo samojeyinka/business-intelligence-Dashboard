@@ -17,7 +17,7 @@ import VentureCard3D from '@/components/VentureCard3D';
 import FuturisticSearch from '@/components/FuturisticSearch';
 import FuturisticTabs from '@/components/FuturisticTabs';
 import FloatingElements from '@/components/FloatingElements';
-import Nova from '@/components/Nova';
+import ChatBox from '../ChatBox';
 
 const stageColors: Record<VentureStage, string> = {
   IDEA: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
@@ -553,7 +553,7 @@ const VenturesPage = () => {
       </main>
       
       {/* Nova AI Assistant */}
-      {isMounted && <Nova />}
+      {isMounted && <ChatBox />}
     </div>
   );
 };

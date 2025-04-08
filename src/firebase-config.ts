@@ -1,16 +1,16 @@
-import {initializeApp} from "firebase/app"
-import { getFirestore } from 'firebase/firestore';
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
 
 const firebaseConfig = {
-    apiKey: "AIzaSyAZgJwZZNshygusNNeLmJlC9xifVKKG49w",
-    authDomain: "coact-9745f.firebaseapp.com",
-    projectId: "coact-9745f",
-    storageBucket: "coact-9745f.firebasestorage.app",
-    messagingSenderId: "847158245352",
-    appId: "1:847158245352:web:ce8ddd3eac69267785d65d",
-    measurementId: "G-VW6PMSQL4E"
-  };
-  
+  apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
+  authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
+  projectId: process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID,
+  storageBucket: process.env.NEXT_PUBLIC_FIREBASE_STORAGE_BUCKET,
+  messagingSenderId: process.env.NEXT_PUBLIC_FIREBASE_MESSAGING_SENDER_ID,
+  appId: process.env.NEXT_PUBLIC_FIREBASE_APP_ID,
+  measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
+};
 
-  const app = initializeApp(firebaseConfig);
-  export const db = getFirestore(app);
+
+const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+export const db = getFirestore(app);

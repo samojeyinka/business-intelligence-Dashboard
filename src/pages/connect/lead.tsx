@@ -15,10 +15,10 @@ import Header from '@/components/Header';
 import DynamicCursor from '@/components/DynamicCursor';
 import FloatingElements from '@/components/FloatingElements';
 import VentureParticleEffect from '@/components/VentureParticleEffect';
-import Nova from '@/components/Nova';
 import { ArrowLeft, ArrowRight, Check, Rocket, Sparkles, Star } from 'lucide-react';
 import { db } from '@/firebase-config';
 import { addDoc, collection } from 'firebase/firestore';
+import ChatBox from '../ChatBox';
 
 
 type Question = {
@@ -555,7 +555,7 @@ const LeadVenturePage = () => {
       </main>
       
       {/* Nova AI Assistant */}
-      {isMounted && <Nova />}
+      {isMounted && <ChatBox />}
       
       {/* Add shimmer animation */}
       <style jsx global>{`
