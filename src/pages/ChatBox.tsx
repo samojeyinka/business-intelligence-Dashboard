@@ -35,7 +35,7 @@ const ChatBox: React.FC = () => {
           className="w-12 h-12 rounded-full bg-gradient-to-r from-blue-600 to-purple-600 p-0 flex items-center justify-center"
         >
           <span className="text-xl">
-            {isOpen ? '×' : 'N'}
+            {isOpen ? '×' : ' CB'}
           </span>
         </Button>
       </motion.div>

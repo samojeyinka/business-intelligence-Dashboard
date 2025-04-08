@@ -2,6 +2,7 @@ import { NextApiRequest, NextApiResponse } from 'next';
 import { withRateLimit } from './rateLimit';
 import { withErrorHandler, withMethods } from './errorHandler';
 import { withSecurityHeaders } from './securityHeaders';
+import { withCsrfProtection } from './csrf';
 
 // Combine all middlewares
 export function withApiMiddleware(
@@ -12,10 +13,11 @@ export function withApiMiddleware(
       limit: number;
       windowMs: number;
     };
+    csrfProtection?: boolean;
   }
 ) {
   // Apply middlewares in the correct order
-  return withSecurityHeaders(
+  let wrappedHandler = withSecurityHeaders(
     withErrorHandler(
       withMethods(
         withRateLimit(handler, options.rateLimit),
@@ -23,4 +25,12 @@ export function withApiMiddleware(
       )
     )
   );
+  
+  // Add CSRF protection if enabled
+  if (options.csrfProtection !== false && 
+      options.methods.some(m => m !== 'GET' && m !== 'HEAD')) {
+    wrappedHandler = withCsrfProtection(wrappedHandler);
+  }
+  
+  return wrappedHandler;
 }

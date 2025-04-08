@@ -26,10 +26,10 @@ const VentureParticleEffect: React.FC = memo(() => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
-    // Initialize particles - reduced count for better performance
+    // Initialize particles - significantly reduced count for better performance
     const initParticles = () => {
-      // Reduce particle count for better performance
-      const particleCount = Math.min(Math.floor(window.innerWidth / 40), 50);
+      // Drastically reduce particle count for better performance
+      const particleCount = Math.min(Math.floor(window.innerWidth / 100), 20);
       const particles: Particle[] = [];
       
       const colors = ['#8b5cf6', '#6366f1', '#ec4899', '#f97316'];
@@ -39,10 +39,10 @@ const VentureParticleEffect: React.FC = memo(() => {
           x: Math.random() * canvas.width,
           y: Math.random() * canvas.height,
           size: Math.random() * 1.5 + 0.5, // Smaller particles
-          speedX: (Math.random() - 0.5) * 0.3, // Slower movement
-          speedY: (Math.random() - 0.5) * 0.3,
+          speedX: (Math.random() - 0.5) * 0.2, // Even slower movement
+          speedY: (Math.random() - 0.5) * 0.2,
           color: colors[Math.floor(Math.random() * colors.length)],
-          alpha: 0.1 + Math.random() * 0.3
+          alpha: 0.1 + Math.random() * 0.2
         });
       }
       
@@ -61,20 +61,20 @@ const VentureParticleEffect: React.FC = memo(() => {
     
     setCanvasDimensions();
     
-    // Throttled resize handler
+    // Throttled resize handler with increased throttle time
     let resizeTimeout: NodeJS.Timeout;
     const handleResize = () => {
       clearTimeout(resizeTimeout);
-      resizeTimeout = setTimeout(setCanvasDimensions, 200);
+      resizeTimeout = setTimeout(setCanvasDimensions, 300);
     };
     
     window.addEventListener('resize', handleResize);
     
-    // Throttled mouse move handler
+    // Heavily throttled mouse move handler
     let lastMouseMoveTime = 0;
     const handleMouseMove = (e: MouseEvent) => {
       const now = Date.now();
-      if (now - lastMouseMoveTime > 50) { // Only update every 50ms
+      if (now - lastMouseMoveTime > 100) { // Only update every 100ms
         mouseRef.current = { x: e.clientX, y: e.clientY };
         lastMouseMoveTime = now;
       }
@@ -82,7 +82,7 @@ const VentureParticleEffect: React.FC = memo(() => {
     
     window.addEventListener('mousemove', handleMouseMove);
     
-    // Animation loop with performance optimizations
+    // Animation loop with significant performance optimizations
     const animate = () => {
       ctx.clearRect(0, 0, canvas.width, canvas.height);
       
@@ -91,21 +91,21 @@ const VentureParticleEffect: React.FC = memo(() => {
       const mouseX = mouseRef.current.x;
       const mouseY = mouseRef.current.y;
       
-      // Draw connections first (fewer, more selective connections)
-      ctx.strokeStyle = 'rgba(139, 92, 246, 0.05)';
+      // Draw connections first (much fewer, more selective connections)
+      ctx.strokeStyle = 'rgba(139, 92, 246, 0.03)';
       ctx.beginPath();
       
-      // Only check connections for a subset of particles
-      for (let i = 0; i < particles.length; i += 2) {
+      // Only check connections for a small subset of particles
+      for (let i = 0; i < particles.length; i += 3) {
         const particle = particles[i];
         
-        for (let j = i + 2; j < particles.length; j += 2) {
+        for (let j = i + 3; j < particles.length; j += 3) {
           const otherParticle = particles[j];
           const dx = particle.x - otherParticle.x;
           const dy = particle.y - otherParticle.y;
           const distance = Math.sqrt(dx * dx + dy * dy);
           
-          if (distance < 120) {
+          if (distance < 100) { // Reduced connection distance
             ctx.moveTo(particle.x, particle.y);
             ctx.lineTo(otherParticle.x, otherParticle.y);
           }
@@ -130,18 +130,18 @@ const VentureParticleEffect: React.FC = memo(() => {
           particle.speedY *= -1;
         }
         
-        // Mouse interaction - only apply to particles near the mouse
+        // Mouse interaction - only apply to particles very near the mouse
         const dx = mouseX - particle.x;
         const dy = mouseY - particle.y;
         const distance = Math.sqrt(dx * dx + dy * dy);
         
-        if (distance < 100) {
-          const force = (100 - distance) / 100;
-          particle.speedX += dx * force * 0.005;
-          particle.speedY += dy * force * 0.005;
+        if (distance < 80) { // Reduced interaction distance
+          const force = (80 - distance) / 80;
+          particle.speedX += dx * force * 0.003;
+          particle.speedY += dy * force * 0.003;
           
           // Limit speed
-          const maxSpeed = 1.5;
+          const maxSpeed = 1.0; // Reduced max speed
           const currentSpeed = Math.sqrt(particle.speedX * particle.speedX + particle.speedY * particle.speedY);
           if (currentSpeed > maxSpeed) {
             particle.speedX = (particle.speedX / currentSpeed) * maxSpeed;
@@ -158,7 +158,11 @@ const VentureParticleEffect: React.FC = memo(() => {
       }
       
       ctx.globalAlpha = 1;
-      animationFrameRef.current = requestAnimationFrame(animate);
+      
+      // Use requestAnimationFrame with a lower frequency for better performance
+      setTimeout(() => {
+        animationFrameRef.current = requestAnimationFrame(animate);
+      }, 1000 / 30); // Cap at 30fps instead of 60fps
     };
     
     initParticles();

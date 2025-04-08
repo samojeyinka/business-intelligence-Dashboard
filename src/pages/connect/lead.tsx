@@ -171,6 +171,18 @@ const LeadVenturePage = () => {
           required: false
         }
       ] as Question[]
+    },
+    {
+      title: 'Thought Exercise',
+      description: 'Help us understand your perspective on complex systems',
+      questions: [
+        {
+          id: 'thoughtQuestion',
+          question: 'How do you approach complex problems with no clear solutions? Describe your thought process and provide an example.',
+          type: 'textarea',
+          required: true
+        }
+      ] as Question[]
     }
   ];
 

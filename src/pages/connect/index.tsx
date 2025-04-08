@@ -57,12 +57,12 @@ const ConnectPage = () => {
       path: '/connect/ask'
     },
     {
-      id: 'pitch-idea',
-      title: 'Pitch an Idea',
-      description: 'Share your innovative concept with our team',
-      icon: <Lightbulb className="w-6 h-6 text-amber-400" />,
+      id: 'find-collaborators',
+      title: 'Find Collaborators',
+      description: 'Connect with others to bring your project to life',
+      icon: <Users className="w-6 h-6 text-amber-400" />,
       color: 'from-amber-500 to-yellow-300',
-      path: '/connect/pitch'
+      path: '/connect/find-collaborators'
     }
   ];
 

@@ -1,5 +1,6 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
+import { sanitizeObject } from './sanitize';
 
 // Helper function to validate request body against a Zod schema
 export function validateBody<T>(
@@ -8,7 +9,9 @@ export function validateBody<T>(
   res: NextApiResponse
 ): { success: true; data: T } | { success: false } {
   try {
-    const data = schema.parse(req.body);
+    // Sanitize input before validation
+    const sanitizedBody = sanitizeObject(req.body);
+    const data = schema.parse(sanitizedBody);
     return { success: true, data };
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -32,7 +35,9 @@ export function validateQuery<T>(
   res: NextApiResponse
 ): { success: true; data: T } | { success: false } {
   try {
-    const data = schema.parse(req.query);
+    // Sanitize input before validation
+    const sanitizedQuery = sanitizeObject(req.query);
+    const data = schema.parse(sanitizedQuery);
     return { success: true, data };
   } catch (error) {
     if (error instanceof z.ZodError) {

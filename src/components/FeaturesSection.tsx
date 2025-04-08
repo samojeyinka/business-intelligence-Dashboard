@@ -92,17 +92,19 @@ const FeaturesSection: React.FC = () => {
     }
   ];
   
-  // Sectors We're Exploring
-  const sectors = [
-    "Work & Wealth",
-    "Knowledge & Thought",
-    "Energy & Resources",
-    "Exploration & Discovery",
-    "Trade & Commerce",
-    "Mobility & Logistics",
-    "Food & Systems",
-    "Media & Influence"
-  ];
+  // Sectors We're Exploring with specific descriptions
+  const sectorDescriptions: Record<string, string> = {
+    "Work & Wealth": "Ventures in this sector are reimagining how we work, earn, save, and build prosperity in an increasingly digital and automated world.",
+    "Knowledge & Thought": "Ventures in this sector are creating new ways to access, share, and apply knowledge, transforming how we learn and think collectively.",
+    "Energy & Resources": "Ventures in this sector are developing sustainable solutions for energy production, storage, and resource management to address global challenges.",
+    "Exploration & Discovery": "Ventures in this sector are pushing boundaries in science, research, and deep tech to unlock new frontiers of human potential.",
+    "Trade & Commerce": "Ventures in this sector are built to transform how goods and services move across communities.",
+    "Mobility & Logistics": "Ventures in this sector are revolutionizing how people and products move across distances, creating more efficient and sustainable transportation systems.",
+    "Food & Systems": "Ventures in this sector are reimagining our food systems from production to consumption, addressing sustainability, health, and access challenges.",
+    "Media & Influence": "Ventures in this sector are creating new platforms and models for content creation, distribution, and monetization in the digital age."
+  };
+  
+  const sectors = Object.keys(sectorDescriptions);
 
   const containerVariants = {
     hidden: { opacity: 0 },
@@ -520,7 +522,7 @@ const FeaturesSection: React.FC = () => {
                             animate={{ y: 0, opacity: 1 }}
                             transition={{ duration: 0.3, delay: 0.3 }}
                           >
-                            Ventures in this sector are designed to question the norm, push boundaries, and deliver measurable impact.
+                            {sectorDescriptions[activeSector]}
                           </motion.p>
                         </div>
                       </motion.div>

@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { motion } from 'framer-motion';
 
 interface Particle {
@@ -13,8 +13,9 @@ interface Particle {
 const InteractiveBackground: React.FC = () => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [particles, setParticles] = useState<Particle[]>([]);
+  const particlesRef = useRef<Particle[]>([]);
   const animationRef = useRef<number>();
+  const isRunningRef = useRef<boolean>(true);
 
   // Initialize particles
   useEffect(() => {
@@ -33,17 +34,25 @@ const InteractiveBackground: React.FC = () => {
         });
       }
       
-      setParticles(newParticles);
+      particlesRef.current = newParticles;
     };
 
     initParticles();
     
     const handleResize = () => {
       initParticles();
+      
+      if (canvasRef.current) {
+        canvasRef.current.width = window.innerWidth;
+        canvasRef.current.height = window.innerHeight;
+      }
     };
     
     window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
+    return () => {
+      isRunningRef.current = false;
+      window.removeEventListener('resize', handleResize);
+    };
   }, []);
 
   // Track mouse position
@@ -56,74 +65,79 @@ const InteractiveBackground: React.FC = () => {
     return () => window.removeEventListener('mousemove', handleMouseMove);
   }, []);
 
-  // Animation loop
-  useEffect(() => {
-    if (!canvasRef.current) return;
+  // Animation loop using useCallback to prevent recreating the function
+  const animate = useCallback(() => {
+    if (!canvasRef.current || !isRunningRef.current) return;
     
     const canvas = canvasRef.current;
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    
+    // Update and draw particles
+    particlesRef.current = particlesRef.current.map(particle => {
+      // Calculate distance from mouse
+      const dx = mousePosition.x - particle.x;
+      const dy = mousePosition.y - particle.y;
+      const distance = Math.sqrt(dx * dx + dy * dy);
+      const maxDistance = 150;
+      
+      // Apply force if within range
+      let newX = particle.x;
+      let newY = particle.y;
+      
+      if (distance < maxDistance) {
+        const force = (maxDistance - distance) / maxDistance;
+        newX -= dx * force * 0.02;
+        newY -= dy * force * 0.02;
+      }
+      
+      // Normal movement
+      newX += particle.speedX;
+      newY += particle.speedY;
+      
+      // Wrap around edges
+      if (newX < 0) newX = canvas.width;
+      if (newX > canvas.width) newX = 0;
+      if (newY < 0) newY = canvas.height;
+      if (newY > canvas.height) newY = 0;
+      
+      // Draw particle
+      ctx.beginPath();
+      ctx.arc(newX, newY, particle.size, 0, Math.PI * 2);
+      ctx.fillStyle = `rgba(150, 200, 255, ${particle.opacity})`;
+      ctx.fill();
+      
+      return {
+        ...particle,
+        x: newX,
+        y: newY
+      };
+    });
+    
+    animationRef.current = requestAnimationFrame(animate);
+  }, [mousePosition]);
+
+  // Setup animation
+  useEffect(() => {
+    if (!canvasRef.current) return;
+    
+    const canvas = canvasRef.current;
     canvas.width = window.innerWidth;
     canvas.height = window.innerHeight;
     
-    const animate = () => {
-      ctx.clearRect(0, 0, canvas.width, canvas.height);
-      
-      // Update and draw particles
-      setParticles(prevParticles => 
-        prevParticles.map(particle => {
-          // Calculate distance from mouse
-          const dx = mousePosition.x - particle.x;
-          const dy = mousePosition.y - particle.y;
-          const distance = Math.sqrt(dx * dx + dy * dy);
-          const maxDistance = 150;
-          
-          // Apply force if within range
-          let newX = particle.x;
-          let newY = particle.y;
-          
-          if (distance < maxDistance) {
-            const force = (maxDistance - distance) / maxDistance;
-            newX -= dx * force * 0.02;
-            newY -= dy * force * 0.02;
-          }
-          
-          // Normal movement
-          newX += particle.speedX;
-          newY += particle.speedY;
-          
-          // Wrap around edges
-          if (newX < 0) newX = canvas.width;
-          if (newX > canvas.width) newX = 0;
-          if (newY < 0) newY = canvas.height;
-          if (newY > canvas.height) newY = 0;
-          
-          // Draw particle
-          ctx.beginPath();
-          ctx.arc(newX, newY, particle.size, 0, Math.PI * 2);
-          ctx.fillStyle = `rgba(150, 200, 255, ${particle.opacity})`;
-          ctx.fill();
-          
-          return {
-            ...particle,
-            x: newX,
-            y: newY
-          };
-        })
-      );
-      
-      animationRef.current = requestAnimationFrame(animate);
-    };
-    
+    // Start animation
     animate();
     
+    // Cleanup
     return () => {
+      isRunningRef.current = false;
       if (animationRef.current) {
         cancelAnimationFrame(animationRef.current);
       }
     };
-  }, [mousePosition]);
+  }, [animate]);
 
   return (
     <canvas 

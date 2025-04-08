@@ -7,6 +7,8 @@ import DynamicCursor from '@/components/DynamicCursor';
 import InteractiveBackground from '@/components/InteractiveBackground';
 import EcosystemSection from '@/components/EcosystemSection';
 import ChatBox from '../ChatBox';
+import Header from '@/components/Header';
+
 
 // Define the sections for the interactive journey
 const journeySections = [
@@ -40,27 +42,7 @@ const journeySections = [
   },
 ];
 
-// Team members data
-const teamMembers = [
-  {
-    name: 'Team Member 1',
-    role: 'Founder & CEO',
-    bio: 'Visionary leader with expertise in venture building and strategic partnerships.',
-    avatar: '/images/rect.png',
-  },
-  {
-    name: 'Team Member 2',
-    role: 'Chief Innovation Officer',
-    bio: 'Passionate about emerging technologies and disruptive business models.',
-    avatar: '/images/rect.png',
-  },
-  {
-    name: 'Team Member 3',
-    role: 'Head of Partnerships',
-    bio: 'Connecting founders with resources and opportunities to accelerate growth.',
-    avatar: '/images/rect.png',
-  },
-];
+// No team members data needed
 
 // Interactive mission statement component
 const InteractiveMission = () => {
@@ -105,19 +87,16 @@ const InteractiveMission = () => {
         {' '}the future.
       </h2>
       <p className="text-xl text-gray-300 mb-6">
-        Coact is a venture creation engine built to empower bold thinkers, curious minds, and passionate builders.
+        Coact is a venture creation engine built to empower bold thinkers, innovative minds, and passionate builders.
         We exist to help people—regardless of background—turn ideas into impactful startups.
       </p>
       <div className="mt-8 p-6 rounded-xl bg-gray-800/30 border border-gray-700">
         <h3 className="text-2xl font-bold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-blue-500 to-purple-500">
           🌍 Our Vision
         </h3>
-        <p className="text-lg text-gray-300 mb-4">
+        <p className="text-lg text-gray-300">
           To become the foundational infrastructure for startup creation across Africa—and eventually, globally.
-          We want Coact to be the platform people return to when they want to create again, grow again, learn again.
-        </p>
-        <p className="text-lg text-gray-300 italic">
-          This is the new frontier. The future belongs to the curious.
+          The platform where people return when they're ready to create again, grow again, learn again.
         </p>
       </div>
     </div>
@@ -176,14 +155,14 @@ const JourneySection = () => {
 
 // Interactive values game component
 const ValuesGame = () => {
-  const [activeValue, setActiveValue] = useState(null);
+  const [activeValue, setActiveValue] = useState<string | null>(null);
   const [score, setScore] = useState(0);
   
   const values = [
     {
-      id: 'curiosity',
-      name: 'Curiosity',
-      description: 'We approach challenges with an open mind and insatiable desire to learn.',
+      id: 'innovation',
+      name: 'Innovation',
+      description: 'We approach challenges with an open mind and drive to discover new solutions.',
       icon: '🧠',
     },
     {
@@ -206,7 +185,7 @@ const ValuesGame = () => {
     },
   ];
   
-  const handleValueClick = (id) => {
+  const handleValueClick = (id: string) => {
     setActiveValue(id);
     setScore(prev => prev + 10);
   };
@@ -261,43 +240,7 @@ const ValuesGame = () => {
   );
 };
 
-// Team showcase component
-const TeamShowcase = () => {
-  return (
-    <div className="py-16 px-4">
-      <h2 className="text-3xl md:text-4xl font-bold text-center mb-12">Meet Our Team</h2>
-      
-      <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
-        {teamMembers.map((member, index) => (
-          <motion.div
-            key={index}
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ delay: index * 0.2 }}
-          >
-            <Card className="overflow-hidden bg-gray-800/30 border-gray-700">
-              <div className="aspect-square relative overflow-hidden">
-                <motion.img
-                  src={member.avatar}
-                  alt={member.name}
-                  className="object-cover w-full h-full"
-                  whileHover={{ scale: 1.1 }}
-                />
-                <div className="absolute inset-0 bg-gradient-to-t from-black/80 to-transparent" />
-              </div>
-              <div className="p-6">
-                <h3 className="text-xl font-bold mb-1">{member.name}</h3>
-                <p className="text-sm text-purple-300 mb-3">{member.role}</p>
-                <p className="text-gray-300 text-sm">{member.bio}</p>
-              </div>
-            </Card>
-          </motion.div>
-        ))}
-      </div>
-    </div>
-  );
-};
+// Team showcase component removed
 
 // Call to action component
 const CallToAction = () => {
@@ -338,8 +281,14 @@ const CallToAction = () => {
 };
 
 export default function AboutPage() {
+  const [isMounted, setIsMounted] = useState(false);
   const { scrollYProgress } = useScroll();
   const progressHeight = useTransform(scrollYProgress, [0, 1], ["0%", "100%"]);
+  
+  // Only show dynamic cursor on client-side to prevent hydration errors
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
   
   return (
     <>
@@ -348,10 +297,13 @@ export default function AboutPage() {
         <meta name="description" content="Learn about Coact Ventures - a venture studio focused on learning, exploring, and building the future." />
       </Head>
       
-      <DynamicCursor />
+      {isMounted && <DynamicCursor />}
       
       <div className="min-h-screen bg-black text-white relative overflow-hidden">
         <InteractiveBackground />
+        
+        {/* Header */}
+        <Header />
         
         {/* Progress bar */}
         <motion.div 
@@ -373,7 +325,7 @@ export default function AboutPage() {
               </span>
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8">
-              A venture creation engine built to empower bold thinkers, curious minds, and passionate builders
+              A venture creation engine built to empower bold thinkers, innovative minds, and passionate builders
             </p>
             
             <motion.div
@@ -384,10 +336,7 @@ export default function AboutPage() {
             >
               <p className="text-lg text-gray-300">
                 Our platform brings together everything needed to create, grow, and sustain ventures in today's fast-changing world.
-                But we're more than just a startup builder—we're building a living ecosystem for the curious.
-              </p>
-              <p className="text-lg text-gray-300 mt-4 italic font-medium">
-                This is the new frontier. The future belongs to the curious.
+                We're more than just a startup builder—we're building a living ecosystem for innovative thinkers and creators.
               </p>
             </motion.div>
             
@@ -427,9 +376,6 @@ export default function AboutPage() {
         
         {/* Ecosystem section */}
         <EcosystemSection />
-        
-        {/* Team showcase */}
-        <TeamShowcase />
         
         {/* Call to action */}
         <CallToAction />

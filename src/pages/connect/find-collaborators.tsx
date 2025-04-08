@@ -12,20 +12,21 @@ import Header from '@/components/Header';
 import DynamicCursor from '@/components/DynamicCursor';
 import FloatingElements from '@/components/FloatingElements';
 import VentureParticleEffect from '@/components/VentureParticleEffect';
-import { ArrowLeft, Check, Lightbulb } from 'lucide-react';
+import { ArrowLeft, Check, Lightbulb, Users } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/firebase-config';
 import ChatBox from '../ChatBox';
 
-const PitchIdeaPage = () => {
+const FindCollaboratorsPage = () => {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [formData, setFormData] = useState({
     name: '',
     email: '',
-    ideaTitle: '',
-    ideaDescription: '',
+    linkedin: '',
+    projectTitle: '',
+    projectDescription: '',
     sector: '',
     stage: '',
     isConfidential: false
@@ -102,13 +103,18 @@ const PitchIdeaPage = () => {
       isValid = false;
     }
 
-    if (!formData.ideaTitle.trim()) {
-      newErrors.ideaTitle = 'Idea title is required';
+    if (formData.linkedin && !formData.linkedin.includes('linkedin.com')) {
+      newErrors.linkedin = 'Please enter a valid LinkedIn URL';
       isValid = false;
     }
 
-    if (!formData.ideaDescription.trim()) {
-      newErrors.ideaDescription = 'Idea description is required';
+    if (!formData.projectTitle.trim()) {
+      newErrors.projectTitle = 'Project title is required';
+      isValid = false;
+    }
+
+    if (!formData.projectDescription.trim()) {
+      newErrors.projectDescription = 'Project description is required';
       isValid = false;
     }
 
@@ -209,16 +215,16 @@ const PitchIdeaPage = () => {
           >
             <div className="flex justify-center mb-4">
               <div className="p-3 rounded-full bg-gradient-to-br from-amber-500 to-yellow-300 bg-opacity-10">
-                <Lightbulb className="w-8 h-8 text-amber-400" />
+                <Users className="w-8 h-8 text-amber-400" />
               </div>
             </div>
             
             <h1 className="text-4xl font-bold mb-2">
-              Pitch Your Idea
+              Find Collaborators
             </h1>
             
             <p className="text-zinc-400 max-w-xl mx-auto">
-              Share your innovative concept with our team and explore potential collaboration
+              Share your project and connect with potential collaborators from our community
             </p>
           </motion.div>
 
@@ -241,11 +247,11 @@ const PitchIdeaPage = () => {
               </motion.div>
               
               <h2 className="text-3xl font-bold mb-4 text-white">
-                Idea Submitted!
+                Project Submitted!
               </h2>
               
               <p className="text-zinc-400 max-w-md mx-auto mb-8">
-                Thank you for sharing your idea with us. Our team will review your concept and reach out to discuss potential next steps.
+                Thank you for sharing your project with us. Our team will review your submission and help connect you with potential collaborators.
               </p>
               
               <Button
@@ -288,17 +294,32 @@ const PitchIdeaPage = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="ideaTitle" className="text-sm font-medium">
-                    Idea Title <span className="text-red-500">*</span>
+                  <Label htmlFor="linkedin" className="text-sm font-medium">
+                    LinkedIn Profile URL
                   </Label>
                   <Input
-                    id="ideaTitle"
-                    value={formData.ideaTitle}
-                    onChange={(e) => handleInputChange('ideaTitle', e.target.value)}
-                    placeholder="Give your idea a concise title"
-                    className={errors.ideaTitle ? 'border-red-500' : ''}
+                    id="linkedin"
+                    type="url"
+                    value={formData.linkedin}
+                    onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                    placeholder="https://www.linkedin.com/in/yourprofile"
+                    className={errors.linkedin ? 'border-red-500' : ''}
                   />
-                  {errors.ideaTitle && <p className="text-red-500 text-sm">{errors.ideaTitle}</p>}
+                  {errors.linkedin && <p className="text-red-500 text-sm">{errors.linkedin}</p>}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="projectTitle" className="text-sm font-medium">
+                    Project Title <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="projectTitle"
+                    value={formData.projectTitle}
+                    onChange={(e) => handleInputChange('projectTitle', e.target.value)}
+                    placeholder="Give your project a concise title"
+                    className={errors.projectTitle ? 'border-red-500' : ''}
+                  />
+                  {errors.projectTitle && <p className="text-red-500 text-sm">{errors.projectTitle}</p>}
                 </div>
                 
                 <div className="space-y-2">
@@ -346,17 +367,17 @@ const PitchIdeaPage = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="ideaDescription" className="text-sm font-medium">
-                    Idea Description <span className="text-red-500">*</span>
+                  <Label htmlFor="projectDescription" className="text-sm font-medium">
+                    Project Description <span className="text-red-500">*</span>
                   </Label>
                   <Textarea
-                    id="ideaDescription"
-                    value={formData.ideaDescription}
-                    onChange={(e) => handleInputChange('ideaDescription', e.target.value)}
-                    placeholder="Describe your idea, the problem it solves, and its potential impact"
-                    className={`min-h-[150px] ${errors.ideaDescription ? 'border-red-500' : ''}`}
+                    id="projectDescription"
+                    value={formData.projectDescription}
+                    onChange={(e) => handleInputChange('projectDescription', e.target.value)}
+                    placeholder="Describe your project, the problem it solves, and what kind of collaborators you're looking for"
+                    className={`min-h-[150px] ${errors.projectDescription ? 'border-red-500' : ''}`}
                   />
-                  {errors.ideaDescription && <p className="text-red-500 text-sm">{errors.ideaDescription}</p>}
+                  {errors.projectDescription && <p className="text-red-500 text-sm">{errors.projectDescription}</p>}
                 </div>
                 
                 <div className="flex items-center space-x-2">
@@ -366,7 +387,7 @@ const PitchIdeaPage = () => {
                     onCheckedChange={(checked) => handleInputChange('isConfidential', checked)}
                   />
                   <Label htmlFor="isConfidential" className="text-sm">
-                    This idea contains confidential information
+                    This project contains confidential information
                   </Label>
                 </div>
                 
@@ -381,7 +402,7 @@ const PitchIdeaPage = () => {
                       <span>Submitting...</span>
                     </div>
                   ) : (
-                    'Submit Your Idea'
+                    'Find Collaborators'
                   )}
                 </Button>
               </form>
@@ -414,4 +435,4 @@ const PitchIdeaPage = () => {
   );
 };
 
-export default PitchIdeaPage;
+export default FindCollaboratorsPage;

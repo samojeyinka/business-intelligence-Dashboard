@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useRef, useCallback } from 'react';
 import { motion } from 'framer-motion';
 
 interface FloatingElementsProps {
@@ -7,38 +7,47 @@ interface FloatingElementsProps {
 
 const FloatingElements: React.FC<FloatingElementsProps> = ({ count = 8 }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
+  const lastMoveTimeRef = useRef<number>(0);
   
-  const handleMouseMove = (e: React.MouseEvent) => {
+  // Throttled mouse move handler
+  const handleMouseMove = useCallback((e: React.MouseEvent) => {
+    const now = Date.now();
+    if (now - lastMoveTimeRef.current < 100) return; // Only update every 100ms
+    lastMoveTimeRef.current = now;
+    
     const { clientX, clientY } = e;
     const x = (clientX / window.innerWidth) - 0.5;
     const y = (clientY / window.innerHeight) - 0.5;
     
     setMousePosition({ x, y });
-  };
+  }, []);
 
-  // Generate random elements
-  const elements = Array.from({ length: count }).map((_, index) => {
-    const size = Math.floor(Math.random() * 16) + 8; // 8-24px
-    const isSquare = Math.random() > 0.5;
-    const isOutlined = Math.random() > 0.5;
-    const position = {
-      top: `${Math.random() * 80 + 10}%`,
-      left: `${Math.random() * 80 + 10}%`,
-    };
-    const duration = Math.random() * 2 + 3; // 3-5s
-    const delay = Math.random() * 2;
-    
-    return {
-      id: index,
-      size,
-      isSquare,
-      isOutlined,
-      position,
-      duration,
-      delay,
-      mouseMultiplier: (Math.random() * 30) + 10, // 10-40
-    };
-  });
+  // Generate random elements - reduced count for better performance
+  const actualCount = Math.min(count, 6); // Cap at 6 elements maximum
+  const elements = React.useMemo(() => {
+    return Array.from({ length: actualCount }).map((_, index) => {
+      const size = Math.floor(Math.random() * 16) + 8; // 8-24px
+      const isSquare = Math.random() > 0.5;
+      const isOutlined = Math.random() > 0.5;
+      const position = {
+        top: `${Math.random() * 80 + 10}%`,
+        left: `${Math.random() * 80 + 10}%`,
+      };
+      const duration = Math.random() * 2 + 3; // 3-5s
+      const delay = Math.random() * 2;
+      
+      return {
+        id: index,
+        size,
+        isSquare,
+        isOutlined,
+        position,
+        duration,
+        delay,
+        mouseMultiplier: (Math.random() * 20) + 5, // Reduced multiplier: 5-25
+      };
+    });
+  }, [actualCount]);
 
   return (
     <div 
@@ -48,13 +57,7 @@ const FloatingElements: React.FC<FloatingElementsProps> = ({ count = 8 }) => {
       {elements.map((element) => (
         <motion.div
           key={element.id}
-          className={`absolute ${
-            element.isOutlined 
-              ? 'border border-purple-500/30' 
-              : element.isSquare 
-                ? 'bg-gradient-to-br from-purple-500/20 to-blue-500/20' 
-                : 'bg-gradient-to-br from-pink-500/20 to-purple-500/20'
-          } ${element.isSquare ? 'rounded-md' : 'rounded-full'}`}
+          className={`absolute ${element.isOutlined ? 'border border-purple-500/30' : element.isSquare ? 'bg-gradient-to-br from-purple-500/20 to-blue-500/20' : 'bg-gradient-to-br from-pink-500/20 to-purple-500/20'} ${element.isSquare ? 'rounded-md' : 'rounded-full'}`}
           style={{
             width: element.size,
             height: element.size,
@@ -62,7 +65,7 @@ const FloatingElements: React.FC<FloatingElementsProps> = ({ count = 8 }) => {
             left: element.position.left,
           }}
           animate={{
-            y: [0, -20, 0],
+            y: [0, -15, 0], // Reduced movement range
             x: mousePosition.x * element.mouseMultiplier,
             rotate: [0, 360],
           }}
@@ -81,8 +84,8 @@ const FloatingElements: React.FC<FloatingElementsProps> = ({ count = 8 }) => {
             },
             x: {
               type: 'spring',
-              stiffness: 50,
-              damping: 20,
+              stiffness: 40, // Reduced stiffness
+              damping: 15,
             },
           }}
         />
@@ -91,4 +94,4 @@ const FloatingElements: React.FC<FloatingElementsProps> = ({ count = 8 }) => {
   );
 };
 
-export default FloatingElements;
+export default React.memo(FloatingElements);

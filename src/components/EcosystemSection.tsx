@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, ReactNode } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { 
   Rocket, 
@@ -9,12 +9,19 @@ import {
   Sparkles
 } from 'lucide-react';
 
+interface EcosystemItem {
+  title: string;
+  description: string;
+  icon: ReactNode;
+  content: string;
+}
+
 const EcosystemSection = () => {
   // State for interactive elements
   const [activeNode, setActiveNode] = useState<number | null>(null);
   
   // The Ecosystem section data
-  const ecosystem = [
+  const ecosystem: EcosystemItem[] = [
     {
       title: 'For Founders',
       description: 'Join forces with experienced operators, validated playbooks, and mission-aligned resources to launch and scale impactful ventures.',
