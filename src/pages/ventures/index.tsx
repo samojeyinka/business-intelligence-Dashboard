@@ -9,7 +9,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Separator } from '@/components/ui/separator';
-import { ChevronUp, ChevronDown, Search, Filter, ArrowUpRight, Star, Users, Clock, Sparkles } from 'lucide-react';
+import { ChevronUp, ChevronDown, Search, Filter, ArrowUpRight, Star, Users, Clock, Sparkles, Zap } from 'lucide-react';
 import Header from '@/components/Header';
 import DynamicCursor from '@/components/DynamicCursor';
 import VentureParticleEffect from '@/components/VentureParticleEffect';
@@ -89,6 +89,12 @@ const VentureCard = ({ venture }: { venture: VentureWithRelations }) => {
                     <Badge variant="outline" className="bg-blue-500/10 text-blue-500 border-blue-500/20 px-2 py-0 text-xs">
                       <Users className="mr-1 h-3 w-3" />
                       Seeking Collaborators
+                    </Badge>
+                  )}
+                  {venture.isCoactProduct && (
+                    <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/20 px-2 py-0 text-xs">
+                      <Zap className="mr-1 h-3 w-3" />
+                      Coact Startup
                     </Badge>
                   )}
                 </div>

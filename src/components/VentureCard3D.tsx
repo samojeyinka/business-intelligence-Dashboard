@@ -153,7 +153,7 @@ const VentureCard3D: React.FC<VentureCard3DProps> = memo(({ venture, index }) =>
                     {venture.isCoactProduct && (
                       <Badge variant="outline" className="bg-purple-500/10 text-purple-500 border-purple-500/20 px-2 py-0 text-xs">
                         <Zap className="mr-1 h-3 w-3" />
-                        Coact Product
+                        Coact Startup
                       </Badge>
                     )}
                   </div>
