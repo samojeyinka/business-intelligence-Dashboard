@@ -6,15 +6,16 @@ import { Card } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
+import { Checkbox } from '@/components/ui/checkbox';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import Header from '@/components/Header';
 import DynamicCursor from '@/components/DynamicCursor';
 import FloatingElements from '@/components/FloatingElements';
 import VentureParticleEffect from '@/components/VentureParticleEffect';
 import Nova from '@/components/Nova';
-import { ArrowLeft, Check, MessageCircle } from 'lucide-react';
+import { ArrowLeft, Check, Lightbulb, Users } from 'lucide-react';
 
-const AskQuestionPage = () => {
+const FindCollaboratorsPage = () => {
   const router = useRouter();
   const [isMounted, setIsMounted] = useState(false);
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -22,8 +23,11 @@ const AskQuestionPage = () => {
     name: '',
     email: '',
     linkedin: '',
-    topic: '',
-    question: ''
+    projectTitle: '',
+    projectDescription: '',
+    sector: '',
+    stage: '',
+    isConfidential: false
   });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -42,13 +46,26 @@ const AskQuestionPage = () => {
     setIsMounted(true);
   }, []);
 
-  const topicOptions = [
-    'Venture Opportunities',
-    'Collaboration Process',
-    'Technology Questions',
-    'Investment Inquiries',
-    'General Information',
+  const sectorOptions = [
+    'AI & Machine Learning',
+    'Blockchain',
+    'Climate Tech',
+    'E-commerce',
+    'EdTech',
+    'FinTech',
+    'Healthcare',
+    'SaaS',
+    'Social Impact',
     'Other'
+  ];
+
+  const stageOptions = [
+    'Just an idea',
+    'Concept development',
+    'Early prototype',
+    'Working prototype',
+    'MVP',
+    'Already launched'
   ];
 
   const handleInputChange = (field: string, value: any) => {
@@ -83,19 +100,29 @@ const AskQuestionPage = () => {
       newErrors.email = 'Email is invalid';
       isValid = false;
     }
-    
+
     if (formData.linkedin && !formData.linkedin.includes('linkedin.com')) {
       newErrors.linkedin = 'Please enter a valid LinkedIn URL';
       isValid = false;
     }
 
-    if (!formData.topic) {
-      newErrors.topic = 'Please select a topic';
+    if (!formData.projectTitle.trim()) {
+      newErrors.projectTitle = 'Project title is required';
       isValid = false;
     }
 
-    if (!formData.question.trim()) {
-      newErrors.question = 'Question is required';
+    if (!formData.projectDescription.trim()) {
+      newErrors.projectDescription = 'Project description is required';
+      isValid = false;
+    }
+
+    if (!formData.sector) {
+      newErrors.sector = 'Please select a sector';
+      isValid = false;
+    }
+
+    if (!formData.stage) {
+      newErrors.stage = 'Please select a stage';
       isValid = false;
     }
 
@@ -168,17 +195,17 @@ const AskQuestionPage = () => {
             transition={{ duration: 0.5, delay: 0.1 }}
           >
             <div className="flex justify-center mb-4">
-              <div className="p-3 rounded-full bg-gradient-to-br from-green-500 to-emerald-400 bg-opacity-10">
-                <MessageCircle className="w-8 h-8 text-green-400" />
+              <div className="p-3 rounded-full bg-gradient-to-br from-amber-500 to-yellow-300 bg-opacity-10">
+                <Users className="w-8 h-8 text-amber-400" />
               </div>
             </div>
             
             <h1 className="text-4xl font-bold mb-2">
-              Ask a Question
+              Find Collaborators
             </h1>
             
             <p className="text-zinc-400 max-w-xl mx-auto">
-              Have a question about Coact Ventures? We're here to help!
+              Share your project and connect with potential collaborators from our community
             </p>
           </motion.div>
 
@@ -201,15 +228,15 @@ const AskQuestionPage = () => {
               </motion.div>
               
               <h2 className="text-3xl font-bold mb-4 text-white">
-                Question Submitted!
+                Project Submitted!
               </h2>
               
               <p className="text-zinc-400 max-w-md mx-auto mb-8">
-                Thank you for reaching out. We've received your question and will get back to you as soon as possible.
+                Thank you for sharing your project with us. Our team will review your submission and help connect you with potential collaborators.
               </p>
               
               <Button
-                className="bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                className="bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-white"
                 onClick={() => router.push('/')}
               >
                 Return to Home
@@ -263,45 +290,92 @@ const AskQuestionPage = () => {
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="topic" className="text-sm font-medium">
-                    Topic <span className="text-red-500">*</span>
+                  <Label htmlFor="projectTitle" className="text-sm font-medium">
+                    Project Title <span className="text-red-500">*</span>
+                  </Label>
+                  <Input
+                    id="projectTitle"
+                    value={formData.projectTitle}
+                    onChange={(e) => handleInputChange('projectTitle', e.target.value)}
+                    placeholder="Give your project a concise title"
+                    className={errors.projectTitle ? 'border-red-500' : ''}
+                  />
+                  {errors.projectTitle && <p className="text-red-500 text-sm">{errors.projectTitle}</p>}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="sector" className="text-sm font-medium">
+                    Primary Sector <span className="text-red-500">*</span>
                   </Label>
                   <Select
-                    value={formData.topic}
-                    onValueChange={(value) => handleInputChange('topic', value)}
+                    value={formData.sector}
+                    onValueChange={(value) => handleInputChange('sector', value)}
                   >
-                    <SelectTrigger className={errors.topic ? 'border-red-500' : ''}>
-                      <SelectValue placeholder="Select a topic" />
+                    <SelectTrigger className={errors.sector ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select a sector" />
                     </SelectTrigger>
                     <SelectContent>
-                      {topicOptions.map((topic) => (
-                        <SelectItem key={topic} value={topic}>
-                          {topic}
+                      {sectorOptions.map((sector) => (
+                        <SelectItem key={sector} value={sector}>
+                          {sector}
                         </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
-                  {errors.topic && <p className="text-red-500 text-sm">{errors.topic}</p>}
+                  {errors.sector && <p className="text-red-500 text-sm">{errors.sector}</p>}
                 </div>
                 
                 <div className="space-y-2">
-                  <Label htmlFor="question" className="text-sm font-medium">
-                    Your Question <span className="text-red-500">*</span>
+                  <Label htmlFor="stage" className="text-sm font-medium">
+                    Current Stage <span className="text-red-500">*</span>
+                  </Label>
+                  <Select
+                    value={formData.stage}
+                    onValueChange={(value) => handleInputChange('stage', value)}
+                  >
+                    <SelectTrigger className={errors.stage ? 'border-red-500' : ''}>
+                      <SelectValue placeholder="Select current stage" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {stageOptions.map((stage) => (
+                        <SelectItem key={stage} value={stage}>
+                          {stage}
+                        </SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
+                  {errors.stage && <p className="text-red-500 text-sm">{errors.stage}</p>}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="projectDescription" className="text-sm font-medium">
+                    Project Description <span className="text-red-500">*</span>
                   </Label>
                   <Textarea
-                    id="question"
-                    value={formData.question}
-                    onChange={(e) => handleInputChange('question', e.target.value)}
-                    placeholder="What would you like to know about Coact Ventures?"
-                    className={`min-h-[120px] ${errors.question ? 'border-red-500' : ''}`}
+                    id="projectDescription"
+                    value={formData.projectDescription}
+                    onChange={(e) => handleInputChange('projectDescription', e.target.value)}
+                    placeholder="Describe your project, the problem it solves, and what kind of collaborators you're looking for"
+                    className={`min-h-[150px] ${errors.projectDescription ? 'border-red-500' : ''}`}
                   />
-                  {errors.question && <p className="text-red-500 text-sm">{errors.question}</p>}
+                  {errors.projectDescription && <p className="text-red-500 text-sm">{errors.projectDescription}</p>}
+                </div>
+                
+                <div className="flex items-center space-x-2">
+                  <Checkbox
+                    id="isConfidential"
+                    checked={formData.isConfidential}
+                    onCheckedChange={(checked) => handleInputChange('isConfidential', checked)}
+                  />
+                  <Label htmlFor="isConfidential" className="text-sm">
+                    This project contains confidential information
+                  </Label>
                 </div>
                 
                 <Button
                   type="submit"
                   disabled={isSubmitting}
-                  className="w-full bg-gradient-to-r from-green-500 to-emerald-500 hover:from-green-600 hover:to-emerald-600 text-white"
+                  className="w-full bg-gradient-to-r from-amber-500 to-yellow-400 hover:from-amber-600 hover:to-yellow-500 text-white"
                 >
                   {isSubmitting ? (
                     <div className="flex items-center gap-2">
@@ -309,14 +383,14 @@ const AskQuestionPage = () => {
                       <span>Submitting...</span>
                     </div>
                   ) : (
-                    'Submit Question'
+                    'Find Collaborators'
                   )}
                 </Button>
               </form>
               
               {/* Animated gradient border */}
               <div className="absolute inset-0 p-[1px] rounded-lg overflow-hidden pointer-events-none">
-                <div className="absolute inset-0 bg-gradient-to-r from-green-500 via-emerald-400 to-green-500 opacity-20" 
+                <div className="absolute inset-0 bg-gradient-to-r from-amber-500 via-yellow-400 to-amber-500 opacity-20" 
                   style={{
                     backgroundSize: '200% 100%',
                     animation: 'shimmer 3s linear infinite',
@@ -342,4 +416,4 @@ const AskQuestionPage = () => {
   );
 };
 
-export default AskQuestionPage;
+export default FindCollaboratorsPage;

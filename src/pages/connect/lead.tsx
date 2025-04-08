@@ -168,6 +168,18 @@ const LeadVenturePage = () => {
           required: false
         }
       ] as Question[]
+    },
+    {
+      title: 'Thought Exercise',
+      description: 'Help us understand your perspective on complex systems',
+      questions: [
+        {
+          id: 'thoughtQuestion',
+          question: 'In a world of increasing complexity and interconnected systems, how do you approach understanding and solving problems that have no clear solution? Describe your thought process and provide an example of how you've navigated ambiguity in the past.',
+          type: 'textarea',
+          required: true
+        }
+      ] as Question[]
     }
   ];
 

@@ -21,6 +21,7 @@ const JoinVenturePage = () => {
   const [formData, setFormData] = useState({
     name: '',
     email: '',
+    linkedin: '',
     interests: [] as string[],
     message: ''
   });
@@ -83,6 +84,11 @@ const JoinVenturePage = () => {
       isValid = false;
     } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
       newErrors.email = 'Email is invalid';
+      isValid = false;
+    }
+    
+    if (formData.linkedin && !formData.linkedin.includes('linkedin.com')) {
+      newErrors.linkedin = 'Please enter a valid LinkedIn URL';
       isValid = false;
     }
 
@@ -242,6 +248,21 @@ const JoinVenturePage = () => {
                     className={errors.email ? 'border-red-500' : ''}
                   />
                   {errors.email && <p className="text-red-500 text-sm">{errors.email}</p>}
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="linkedin" className="text-sm font-medium">
+                    LinkedIn Profile URL
+                  </Label>
+                  <Input
+                    id="linkedin"
+                    type="url"
+                    value={formData.linkedin}
+                    onChange={(e) => handleInputChange('linkedin', e.target.value)}
+                    placeholder="https://www.linkedin.com/in/yourprofile"
+                    className={errors.linkedin ? 'border-red-500' : ''}
+                  />
+                  {errors.linkedin && <p className="text-red-500 text-sm">{errors.linkedin}</p>}
                 </div>
                 
                 <div className="space-y-2">
