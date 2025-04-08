@@ -1,14 +1,16 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import Head from 'next/head';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
-import { Edit, ArrowLeft, Tag, X, User, Briefcase } from 'lucide-react';
+import { Edit, ArrowLeft, Tag, X, User, Briefcase, Upload, Mail, AlertCircle } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Label } from '@/components/ui/label';
 import { Badge } from '@/components/ui/badge';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 import Header from '@/components/Header';
 import InteractiveBackground from '@/components/InteractiveBackground';
 import { blogTags } from '@/lib/mockBlogData';
@@ -25,13 +27,19 @@ export default function SubmitArticlePage() {
       name: '',
       role: '',
       avatar: '',
-      profileUrl: ''
+      profileUrl: '',
+      email: ''
     }
   });
+  const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [avatarPreview, setAvatarPreview] = useState<string>('');
+  const [isUploading, setIsUploading] = useState(false);
+  const [verificationDialogOpen, setVerificationDialogOpen] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationToken, setVerificationToken] = useState<string | null>(null);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -51,16 +59,6 @@ export default function SubmitArticlePage() {
             [authorField]: sanitizedUrl
           }
         }));
-      } else if (authorField === 'avatar') {
-        const sanitizedUrl = sanitizeUrl(value);
-        setFormData(prev => ({
-          ...prev,
-          author: {
-            ...prev.author,
-            [authorField]: sanitizedUrl
-          }
-        }));
-        setAvatarPreview(sanitizedUrl);
       } else {
         setFormData(prev => ({
           ...prev,
@@ -85,6 +83,135 @@ export default function SubmitArticlePage() {
         delete newErrors[name];
         return newErrors;
       });
+    }
+  };
+  
+  // Handle file upload
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setErrors(prev => ({
+        ...prev,
+        'author.avatar': 'Please upload a valid image file (jpg, png, gif, webp)'
+      }));
+      return;
+    }
+    
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors(prev => ({
+        ...prev,
+        'author.avatar': 'Image size should be less than 5MB'
+      }));
+      return;
+    }
+    
+    // Create a preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setAvatarPreview(event.target.result as string);
+      }
+    };
+    reader.readAsDataURL(file);
+    
+    // Upload the file
+    setIsUploading(true);
+    
+    try {
+      const formData = new FormData();
+      formData.append('file', file);
+      
+      const response = await fetch('/api/upload/profile-image', {
+        method: 'POST',
+        body: formData,
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to upload image');
+      }
+      
+      // Update form data with the file path
+      setFormData(prev => ({
+        ...prev,
+        author: {
+          ...prev.author,
+          avatar: data.filePath
+        }
+      }));
+      
+      // Clear any existing errors
+      if (errors['author.avatar']) {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors['author.avatar'];
+          return newErrors;
+        });
+      }
+    } catch (error) {
+      console.error('Error uploading file:', error);
+      setErrors(prev => ({
+        ...prev,
+        'author.avatar': 'Failed to upload image. Please try again.'
+      }));
+    } finally {
+      setIsUploading(false);
+    }
+  };
+  
+  // Send verification email
+  const sendVerificationEmail = async () => {
+    if (!formData.author.email) {
+      setErrors(prev => ({
+        ...prev,
+        'author.email': 'Email is required for verification'
+      }));
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const response = await fetch('/api/blog/verify-email', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.author.email,
+          articleData: {
+            ...formData,
+            tags: selectedTags
+          }
+        }),
+      });
+      
+      const data = await response.json();
+      
+      if (!response.ok) {
+        throw new Error(data.error || 'Failed to send verification email');
+      }
+      
+      // Set verification sent flag
+      setVerificationSent(true);
+      
+      // Store the token (in a real app, this would be sent via email)
+      setVerificationToken(data.token);
+      
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      setErrors(prev => ({
+        ...prev,
+        submit: 'Failed to send verification email. Please try again.'
+      }));
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
@@ -124,9 +251,11 @@ export default function SubmitArticlePage() {
       newErrors['author.role'] = 'Author role/title is required';
     }
     
-    // Avatar URL is optional, but if provided, validate it
-    if (formData.author.avatar && !formData.author.avatar.match(/^https?:\/\/.+\.(jpg|jpeg|png|gif|webp)$/i)) {
-      newErrors['author.avatar'] = 'Please provide a valid image URL (jpg, png, gif, webp)';
+    // Email is required for verification
+    if (!formData.author.email.trim()) {
+      newErrors['author.email'] = 'Email is required for verification';
+    } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.author.email)) {
+      newErrors['author.email'] = 'Please enter a valid email address';
     }
     
     if (selectedTags.length === 0) {
@@ -143,11 +272,25 @@ export default function SubmitArticlePage() {
     
     if (!validateForm()) return;
     
+    // Open verification dialog
+    setVerificationDialogOpen(true);
+  };
+  
+  // Handle verification confirmation
+  const handleVerificationConfirm = async () => {
+    // Send verification email
+    await sendVerificationEmail();
+  };
+  
+  // Handle article submission after verification
+  const handleVerifiedSubmission = async () => {
+    if (!verificationToken) return;
+    
     setIsSubmitting(true);
     
     try {
-      // In a real app, this would be an API call
-      // For now, we'll just simulate a submission
+      // In a real app, this would verify the token and publish the article
+      // For this demo, we'll simulate a successful verification
       await new Promise(resolve => setTimeout(resolve, 1500));
       
       // Redirect to success page
@@ -157,6 +300,7 @@ export default function SubmitArticlePage() {
       setErrors({ submit: 'Failed to submit article. Please try again.' });
     } finally {
       setIsSubmitting(false);
+      setVerificationDialogOpen(false);
     }
   };
 
@@ -299,16 +443,33 @@ export default function SubmitArticlePage() {
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                     <div className="space-y-2">
-                      <Label htmlFor="author.avatar">Profile Picture URL (optional)</Label>
-                      <Input
-                        id="author.avatar"
-                        name="author.avatar"
-                        placeholder="https://example.com/your-avatar.jpg"
-                        value={formData.author.avatar}
-                        onChange={handleChange}
-                        className={`bg-zinc-900/50 border ${errors['author.avatar'] ? 'border-red-500' : 'border-zinc-700'}`}
-                      />
-                      {errors['author.avatar'] && <p className="text-red-500 text-sm mt-1">{errors['author.avatar']}</p>}
+                      <Label htmlFor="author.avatar">Profile Picture (optional)</Label>
+                      <div className="flex flex-col gap-2">
+                        <div 
+                          className={`relative flex items-center justify-center border-2 border-dashed rounded-lg p-4 transition-all cursor-pointer hover:bg-zinc-800/30 ${errors['author.avatar'] ? 'border-red-500' : 'border-zinc-700'}`}
+                          onClick={() => fileInputRef.current?.click()}
+                        >
+                          <input
+                            ref={fileInputRef}
+                            type="file"
+                            id="author.avatar"
+                            accept="image/jpeg,image/png,image/gif,image/webp"
+                            className="hidden"
+                            onChange={handleFileUpload}
+                            disabled={isUploading}
+                          />
+                          <div className="flex flex-col items-center gap-2 py-2">
+                            <Upload className="w-5 h-5 text-purple-400" />
+                            <span className="text-sm text-zinc-400">
+                              {isUploading ? 'Uploading...' : 'Click to upload image'}
+                            </span>
+                            <span className="text-xs text-zinc-500">
+                              JPG, PNG, GIF or WEBP (max 5MB)
+                            </span>
+                          </div>
+                        </div>
+                        {errors['author.avatar'] && <p className="text-red-500 text-sm">{errors['author.avatar']}</p>}
+                      </div>
                     </div>
                     
                     <div className="flex flex-col items-center justify-center pt-6">
@@ -322,6 +483,26 @@ export default function SubmitArticlePage() {
                       </Avatar>
                       <p className="text-xs text-zinc-500 mt-2">Preview</p>
                     </div>
+                  </div>
+                  
+                  <div className="space-y-2">
+                    <Label htmlFor="author.email">
+                      Email <span className="text-red-500">*</span>
+                    </Label>
+                    <div className="relative">
+                      <Mail className="absolute left-3 top-1/2 transform -translate-y-1/2 text-zinc-500 w-4 h-4" />
+                      <Input
+                        id="author.email"
+                        name="author.email"
+                        type="email"
+                        placeholder="your.email@example.com"
+                        value={formData.author.email}
+                        onChange={handleChange}
+                        className={`bg-zinc-900/50 border pl-10 ${errors['author.email'] ? 'border-red-500' : 'border-zinc-700'}`}
+                      />
+                    </div>
+                    {errors['author.email'] && <p className="text-red-500 text-sm mt-1">{errors['author.email']}</p>}
+                    <p className="text-xs text-zinc-500">Required for article verification</p>
                   </div>
                   
                   <div className="space-y-2">
@@ -395,6 +576,81 @@ export default function SubmitArticlePage() {
             </motion.div>
           </div>
         </main>
+      </div>
+      
+      {/* Email Verification Dialog */}
+      <Dialog open={verificationDialogOpen} onOpenChange={setVerificationDialogOpen}>
+        <DialogContent className="bg-zinc-900 border border-zinc-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Verify Your Email</DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              We need to verify your email before publishing your article.
+            </DialogDescription>
+          </DialogHeader>
+          
+          {!verificationSent ? (
+            <>
+              <div className="py-4">
+                <p className="mb-4">We'll send a verification link to:</p>
+                <div className="p-3 bg-zinc-800 rounded-md flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-purple-400" />
+                  <span>{formData.author.email}</span>
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setVerificationDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button 
+                  onClick={handleVerificationConfirm}
+                  disabled={isSubmitting}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Verification Email'}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <div className="py-4 space-y-4">
+                <Alert className="bg-green-900/20 border-green-900/30 text-green-300">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Verification email sent successfully!
+                  </AlertDescription>
+                </Alert>
+                
+                <p>Please check your email and click the verification link to publish your article.</p>
+                
+                {/* This is just for demo purposes - in a real app, this would be handled via email */}
+                <div className="p-3 bg-zinc-800 rounded-md">
+                  <p className="text-sm text-zinc-400 mb-2">Demo: Click the button below to simulate clicking the verification link in your email</p>
+                  <Button 
+                    onClick={handleVerifiedSubmission}
+                    disabled={isSubmitting}
+                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                  >
+                    {isSubmitting ? 'Verifying...' : 'Verify and Publish Article'}
+                  </Button>
+                </div>
+              </div>
+              
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setVerificationDialogOpen(false)}
+                >
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
       </div>
     </>
   );

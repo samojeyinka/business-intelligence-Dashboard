@@ -15,6 +15,7 @@
     "isomorphic-dompurify": "^2.4.0",
     "helmet": "^7.1.0",
     "cookie": "^0.6.0",
+    "formidable": "^3.5.1",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@hookform/resolvers": "^3.9.0",
@@ -75,6 +76,7 @@
     "zod": "^3.23.8"
   },
   "devDependencies": {
+    "@types/formidable": "^3.4.5",
     "@types/lodash.throttle": "^4.1.9",
     "@types/node": "^20",
     "@types/react": "^18",
