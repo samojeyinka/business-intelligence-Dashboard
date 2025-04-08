@@ -85,7 +85,7 @@ const EcosystemSection = () => {
         <div className="relative w-full max-w-5xl mx-auto h-96 mb-20">
           {/* Central Hub */}
           <motion.div 
-            className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-30"
+            className="absolute  top-[25%] right-[30%] md:right-[41%]"
             initial={{ scale: 0.9 }}
             animate={{ scale: 1 }}
             transition={{ 
@@ -104,7 +104,7 @@ const EcosystemSection = () => {
                 transition={{ duration: 2, repeat: Infinity, ease: "easeOut" }}
               />
               <motion.div 
-                className="absolute inset-0 rounded-full border-2 border-purple-400/30"
+                className="absolute left-10 inset-0 rounded-full border-2 border-purple-400/30"
                 initial={{ scale: 1, opacity: 0.7 }}
                 animate={{ scale: 1.3, opacity: 0 }}
                 transition={{ duration: 2, repeat: Infinity, ease: "easeOut", delay: 0.5 }}

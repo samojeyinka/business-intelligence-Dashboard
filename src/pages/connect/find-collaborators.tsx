@@ -12,8 +12,10 @@ import Header from '@/components/Header';
 import DynamicCursor from '@/components/DynamicCursor';
 import FloatingElements from '@/components/FloatingElements';
 import VentureParticleEffect from '@/components/VentureParticleEffect';
-import Nova from '@/components/Nova';
 import { ArrowLeft, Check, Lightbulb, Users } from 'lucide-react';
+import { collection, addDoc } from 'firebase/firestore';
+import { db } from '@/firebase-config';
+import ChatBox from '../ChatBox';
 
 const FindCollaboratorsPage = () => {
   const router = useRouter();
@@ -136,14 +138,31 @@ const FindCollaboratorsPage = () => {
     if (validateForm()) {
       setIsSubmitting(true);
       
-      // Simulate API call
-      setTimeout(() => {
+      try {
+    
+        const ideaData = {
+          ...formData,
+        
+          submittedAt: new Date(),
+          status: 'pending-review'
+        };
+        
+     
+        const docRef = await addDoc(collection(db, 'submitted-ideas'), ideaData);
+        
         setIsSubmitting(false);
         setIsSubmitted(true);
+        console.log('Idea submitted to Firestore with ID:', docRef.id);
         
-        // In a real app, you would submit the form data to your API here
-        console.log('Form submitted:', formData);
-      }, 2000);
+      } catch (error) {
+      
+        console.error('Error submitting idea:', error);
+        setIsSubmitting(false);
+        setErrors(prev => ({
+          ...prev,
+          submit: 'Failed to submit idea. Please try again.'
+        }));
+      }
     }
   };
 
@@ -403,7 +422,7 @@ const FindCollaboratorsPage = () => {
       </main>
       
       {/* Nova AI Assistant */}
-      {isMounted && <Nova />}
+      {isMounted && <ChatBox />}
       
       {/* Add shimmer animation */}
       <style jsx global>{`

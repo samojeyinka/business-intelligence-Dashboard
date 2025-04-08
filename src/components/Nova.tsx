@@ -1,36 +1,26 @@
-import React, { useState } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Avatar } from '@/components/ui/avatar';
+import { useState,useEffect,useRef } from 'react';
+import ReactMarkdown from "react-markdown"
+import remartGfm from "remark-gfm"
+import {useChat} from "ai/react"
 
 const Nova: React.FC = () => {
   const [isOpen, setIsOpen] = useState(false);
-  const [messages, setMessages] = useState<{ text: string; isUser: boolean }[]>([
-    { text: "Hello! I'm Nova, your AI guide to Coact Venture Studio. How can I assist you today?", isUser: false },
-  ]);
-  const [input, setInput] = useState('');
 
-  const handleSendMessage = () => {
-    if (!input.trim()) return;
-    
-    // Add user message
-    setMessages([...messages, { text: input, isUser: true }]);
-    setInput('');
-    
-    // Simulate AI response
-    setTimeout(() => {
-      const responses = [
-        "I'm analyzing your request. Coact specializes in creating innovative ventures at the intersection of technology and human experience.",
-        "That's an interesting question! Our adaptive interfaces are designed to evolve with user interaction patterns.",
-        "Coact's mission is to build ventures that redefine digital experiences through AI, immersive design, and real-time data.",
-        "I'd be happy to connect you with our team to discuss potential collaborations or investments.",
-      ];
-      
-      const randomResponse = responses[Math.floor(Math.random() * responses.length)];
-      setMessages(prev => [...prev, { text: randomResponse, isUser: false }]);
-    }, 1000);
-  };
+  const {
+    messages,
+    input,
+    handleInputChange,
+    handleSubmit,
+    isLoading,
+    stop,
+    reload,
+    error
+  } = useChat({api: "/src/pages/api/gemini"})
+  
 
   return (
     <>
@@ -71,39 +61,22 @@ const Nova: React.FC = () => {
             </div>
             
             <div className="h-80 overflow-y-auto p-4 flex flex-col gap-3">
-              {messages.map((message, index) => (
-                <motion.div
-                  key={index}
-                  className={`flex ${message.isUser ? 'justify-end' : 'justify-start'}`}
-                  initial={{ opacity: 0, y: 10 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ delay: 0.1 * (index % 3) }}
-                >
-                  <div
-                    className={`max-w-[80%] p-3 rounded-lg ${
-                      message.isUser
-                        ? 'bg-primary text-primary-foreground'
-                        : 'bg-slate-800 text-slate-100'
-                    }`}
-                  >
-                    {message.text}
-                  </div>
-                </motion.div>
-              ))}
+             No mesage yet
             </div>
             
-            <div className="p-3 border-t border-slate-700 flex gap-2">
+            <form className="p-3 border-t border-slate-700 flex gap-2"
+            onSubmit={handleSubmit}
+            >
               <Input
                 value={input}
-                onChange={(e) => setInput(e.target.value)}
-                onKeyPress={(e) => e.key === 'Enter' && handleSendMessage()}
+                onChange={handleInputChange}
                 placeholder="Ask Nova anything..."
                 className="bg-slate-800 border-slate-700"
               />
-              <Button onClick={handleSendMessage} size="sm">
+              <Button type='submit' size="sm" disabled={isLoading}>
                 Send
               </Button>
-            </div>
+            </form>
           </motion.div>
         )}
       </AnimatePresence>

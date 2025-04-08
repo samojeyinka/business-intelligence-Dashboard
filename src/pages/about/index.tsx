@@ -6,7 +6,9 @@ import { Card } from '@/components/ui/card';
 import DynamicCursor from '@/components/DynamicCursor';
 import InteractiveBackground from '@/components/InteractiveBackground';
 import EcosystemSection from '@/components/EcosystemSection';
+import ChatBox from '../ChatBox';
 import Header from '@/components/Header';
+
 
 // Define the sections for the interactive journey
 const journeySections = [
@@ -377,6 +379,8 @@ export default function AboutPage() {
         
         {/* Call to action */}
         <CallToAction />
+
+        <ChatBox/>
       </div>
     </>
   );

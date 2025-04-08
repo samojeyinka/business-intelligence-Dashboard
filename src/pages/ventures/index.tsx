@@ -11,15 +11,14 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Separator } from '@/components/ui/separator';
 import { ChevronUp, ChevronDown, Search, Filter, ArrowUpRight, Star, Users, Clock, Sparkles, Zap } from 'lucide-react';
 import Header from '@/components/Header';
+import DynamicCursor from '@/components/DynamicCursor';
+import VentureParticleEffect from '@/components/VentureParticleEffect';
+import VentureCard3D from '@/components/VentureCard3D';
+import FuturisticSearch from '@/components/FuturisticSearch';
+import FuturisticTabs from '@/components/FuturisticTabs';
+import FloatingElements from '@/components/FloatingElements';
+import ChatBox from '../ChatBox';
 
-// Lazy load heavy components
-const DynamicCursor = lazy(() => import('@/components/DynamicCursor'));
-const VentureParticleEffect = lazy(() => import('@/components/VentureParticleEffect'));
-const VentureCard3D = lazy(() => import('@/components/VentureCard3D'));
-const FuturisticSearch = lazy(() => import('@/components/FuturisticSearch'));
-const FuturisticTabs = lazy(() => import('@/components/FuturisticTabs'));
-const FloatingElements = lazy(() => import('@/components/FloatingElements'));
-const Nova = lazy(() => import('@/components/Nova'));
 
 const stageColors: Record<VentureStage, string> = {
   IDEA: 'bg-purple-500/10 text-purple-500 border-purple-500/20',
@@ -525,9 +524,10 @@ const VenturesPage = () => {
       {/* Nova AI Assistant - lazy loaded */}
       {isMounted && (
         <Suspense fallback={null}>
-          <Nova />
+          <ChatBox />
         </Suspense>
       )}
+
     </div>
   );
 };

@@ -10,6 +10,7 @@ import FloatingElements from '@/components/FloatingElements';
 import VentureParticleEffect from '@/components/VentureParticleEffect';
 import Nova from '@/components/Nova';
 import { ArrowRight, Users, Lightbulb, MessageCircle, Rocket, Sparkles } from 'lucide-react';
+import ChatBox from '../ChatBox';
 
 const ConnectPage = () => {
   const router = useRouter();
@@ -221,7 +222,7 @@ const ConnectPage = () => {
       </main>
       
       {/* Nova AI Assistant */}
-      {isMounted && <Nova />}
+      {isMounted && <ChatBox />}
     </div>
   );
 };
