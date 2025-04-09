@@ -71,7 +71,7 @@ export const slugSchema = z.object({
 // Venture-specific schemas
 export const ventureQuerySchema = paginationSchema.extend({
   stage: z.string().optional(),
-  sort: z.enum(['upvotes', 'newest', 'oldest']).optional().default('upvotes'),
+  sort: z.enum(['upvotes', 'recent']).optional().default('upvotes'),
   search: z.string().optional().default(''),
   sector: z.string().optional().default(''),
   isLookingForCollaborators: z.enum(['true', 'false']).optional()

@@ -8,7 +8,7 @@ export const mockVentures: VentureWithRelations[] = [
     slug: 'neuralsync',
     description: 'AI-powered neural interface for seamless human-computer interaction',
     longDescription: 'NeuralSync is developing cutting-edge neural interface technology that allows for direct communication between the human brain and computers. Our non-invasive solution uses advanced machine learning algorithms to interpret neural signals and translate them into digital commands, enabling a new era of human-computer interaction.',
-    logo: null,
+    logo: 'https://via.placeholder.com/150/4F46E5/FFFFFF?text=NS',
     website: 'https://neuralsync.ai',
     twitter: 'neuralsync',
     linkedin: 'https://linkedin.com/company/neuralsync',
@@ -33,12 +33,12 @@ export const mockVentures: VentureWithRelations[] = [
       {
         id: '101',
         name: 'Alex Chen',
-        image: null
+        image: 'https://via.placeholder.com/150/4F46E5/FFFFFF?text=AC'
       },
       {
         id: '102',
         name: 'Maya Patel',
-        image: null
+        image: 'https://via.placeholder.com/150/4F46E5/FFFFFF?text=MP'
       }
     ],
     comments: [
@@ -52,7 +52,7 @@ export const mockVentures: VentureWithRelations[] = [
         user: {
           id: '301',
           name: 'Jamie Rodriguez',
-          image: null
+          image: 'https://via.placeholder.com/150/6366F1/FFFFFF?text=JR'
         }
       },
       {
@@ -65,7 +65,7 @@ export const mockVentures: VentureWithRelations[] = [
         user: {
           id: '302',
           name: 'Dr. Sarah Kim',
-          image: null
+          image: 'https://via.placeholder.com/150/8B5CF6/FFFFFF?text=SK'
         }
       }
     ]
@@ -76,7 +76,7 @@ export const mockVentures: VentureWithRelations[] = [
     slug: 'quantumleap',
     description: 'Quantum computing solutions for complex optimization problems',
     longDescription: 'QuantumLeap is building accessible quantum computing solutions that solve complex optimization problems across industries. Our platform allows businesses to leverage quantum algorithms without requiring deep expertise in quantum physics, making this revolutionary technology practical for real-world applications.',
-    logo: null,
+    logo: 'https://via.placeholder.com/150/3B82F6/FFFFFF?text=QL',
     website: 'https://quantumleap.tech',
     twitter: 'quantumleaptech',
     linkedin: 'https://linkedin.com/company/quantumleap',
@@ -101,12 +101,12 @@ export const mockVentures: VentureWithRelations[] = [
       {
         id: '103',
         name: 'Dr. Marcus Johnson',
-        image: null
+        image: 'https://via.placeholder.com/150/3B82F6/FFFFFF?text=MJ'
       },
       {
         id: '104',
         name: 'Olivia Chen',
-        image: null
+        image: 'https://via.placeholder.com/150/3B82F6/FFFFFF?text=OC'
       }
     ],
     comments: [
@@ -120,7 +120,7 @@ export const mockVentures: VentureWithRelations[] = [
         user: {
           id: '303',
           name: 'Thomas Wright',
-          image: null
+          image: 'https://via.placeholder.com/150/EC4899/FFFFFF?text=TW'
         }
       }
     ]
@@ -131,7 +131,7 @@ export const mockVentures: VentureWithRelations[] = [
     slug: 'ecosphere',
     description: 'Blockchain-based platform for transparent carbon credit trading and verification',
     longDescription: 'EcoSphere is revolutionizing the carbon credit market with our blockchain-based platform that ensures transparency, traceability, and trust. We\'re making it easier for companies to offset their carbon footprint while providing verification tools that prevent greenwashing and double-counting of credits.',
-    logo: null,
+    logo: 'https://via.placeholder.com/150/22C55E/FFFFFF?text=ES',
     website: 'https://ecosphere.world',
     twitter: 'ecosphereworld',
     linkedin: 'https://linkedin.com/company/ecosphere-world',
@@ -156,7 +156,7 @@ export const mockVentures: VentureWithRelations[] = [
       {
         id: '105',
         name: 'Emma Rodriguez',
-        image: null
+        image: 'https://via.placeholder.com/150/22C55E/FFFFFF?text=ER'
       }
     ],
     comments: []
@@ -166,8 +166,8 @@ export const mockVentures: VentureWithRelations[] = [
     name: 'Nebula',
     slug: 'nebula',
     description: 'Next-generation space propulsion technology for interplanetary travel',
-    longDescription: null,
-    logo: null,
+    longDescription: 'Nebula is developing revolutionary propulsion technology that will drastically reduce travel time between planets, making interplanetary exploration more feasible. Our stealth-mode project combines advanced physics principles with innovative engineering to create a new paradigm in space travel.',
+    logo: 'https://via.placeholder.com/150/A855F7/FFFFFF?text=NB',
     website: null,
     twitter: null,
     linkedin: null,
@@ -192,7 +192,7 @@ export const mockVentures: VentureWithRelations[] = [
       {
         id: '106',
         name: 'Anonymous Founder',
-        image: null
+        image: 'https://via.placeholder.com/150/A855F7/FFFFFF?text=AF'
       }
     ],
     comments: []
@@ -203,7 +203,7 @@ export const mockVentures: VentureWithRelations[] = [
     slug: 'mindfulai',
     description: 'AI-powered mental health platform for personalized therapy and wellness',
     longDescription: 'MindfulAI combines artificial intelligence with evidence-based therapeutic approaches to provide personalized mental health support. Our platform adapts to each user\'s needs, offering interventions ranging from guided meditation to cognitive behavioral therapy exercises, all while maintaining the highest standards of privacy and ethical AI use.',
-    logo: null,
+    logo: 'https://via.placeholder.com/150/F59E0B/FFFFFF?text=MA',
     website: 'https://mindfulai.health',
     twitter: 'mindfulai_health',
     linkedin: 'https://linkedin.com/company/mindfulai',
@@ -228,12 +228,12 @@ export const mockVentures: VentureWithRelations[] = [
       {
         id: '107',
         name: 'Dr. Jasmine Lee',
-        image: null
+        image: 'https://via.placeholder.com/150/F59E0B/FFFFFF?text=JL'
       },
       {
         id: '108',
         name: 'Michael Torres',
-        image: null
+        image: 'https://via.placeholder.com/150/F59E0B/FFFFFF?text=MT'
       }
     ],
     comments: []
@@ -244,7 +244,7 @@ export const mockVentures: VentureWithRelations[] = [
     slug: 'oceandao',
     description: 'Decentralized autonomous organization funding ocean conservation projects',
     longDescription: 'OceanDAO is a decentralized autonomous organization that funds and governs ocean conservation projects worldwide. By leveraging blockchain technology and community governance, we\'re creating a transparent and efficient way to direct resources to the most impactful marine protection initiatives.',
-    logo: null,
+    logo: 'https://via.placeholder.com/150/0EA5E9/FFFFFF?text=OD',
     website: 'https://oceandao.org',
     twitter: 'ocean_dao',
     linkedin: 'https://linkedin.com/company/oceandao',
@@ -269,12 +269,12 @@ export const mockVentures: VentureWithRelations[] = [
       {
         id: '109',
         name: 'Sophia Martinez',
-        image: null
+        image: 'https://via.placeholder.com/150/0EA5E9/FFFFFF?text=SM'
       },
       {
         id: '110',
         name: 'Liam Johnson',
-        image: null
+        image: 'https://via.placeholder.com/150/0EA5E9/FFFFFF?text=LJ'
       }
     ],
     comments: []
@@ -387,7 +387,7 @@ export const addComment = (ventureId: string, content: string, userId = '301') =
     user: {
       id: userId,
       name: 'Demo User',
-      image: null
+      image: 'https://via.placeholder.com/150/F43F5E/FFFFFF?text=DU'
     }
   };
 };

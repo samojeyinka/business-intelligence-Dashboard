@@ -219,13 +219,12 @@ const VenturesPage = () => {
   // Load ventures on initial render and when filters change
   useEffect(() => {
     loadVentures();
-  }, [activeStage, sortBy, pagination.current, selectedSector]);
+  }, [activeStage, sortBy, pagination.current, selectedSector, searchTerm]);
 
   // Handle search
   const handleSearch = (term: string) => {
     setSearchTerm(term);
     setPagination(prev => ({ ...prev, current: 1 }));
-    loadVentures();
   };
 
   // Handle filter changes
@@ -351,21 +350,11 @@ const VenturesPage = () => {
           className="relative z-10"
         >
           {loading ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {[...Array(6)].map((_, i) => (
-                <motion.div 
-                  key={i}
-                  initial={{ opacity: 0, y: 20 }}
-                  animate={{ opacity: 1, y: 0 }}
-                  transition={{ duration: 0.3, delay: Math.min(i * 0.05, 0.2) }} // Reduced delay
-                >
-                  <Card className="border border-zinc-800 bg-zinc-900/50 h-64 overflow-hidden relative">
-                    <div className="h-full flex items-center justify-center">
-                      <div className="h-8 w-8 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 animate-spin" />
-                    </div>
-                  </Card>
-                </motion.div>
-              ))}
+            <div className="flex justify-center items-center py-20">
+              <div className="flex flex-col items-center">
+                <div className="h-12 w-12 rounded-full bg-gradient-to-r from-purple-500 to-blue-500 animate-spin mb-4" />
+                <p className="text-zinc-400 animate-pulse">Loading ventures...</p>
+              </div>
             </div>
           ) : ventures.length > 0 ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
