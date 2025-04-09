@@ -18,7 +18,7 @@ const FuturisticSearch: React.FC<FuturisticSearchProps> = ({
 }) => {
   const [searchTerm, setSearchTerm] = useState('');
   const [showFilters, setShowFilters] = useState(false);
-  const [selectedSector, setSelectedSector] = useState<string>('');
+  const [selectedSector, setSelectedSector] = useState<string>('all_sectors');
   const [sortBy, setSortBy] = useState('upvotes');
   const [isFocused, setIsFocused] = useState(false);
   const searchRef = useRef<HTMLDivElement>(null);
@@ -33,7 +33,7 @@ const FuturisticSearch: React.FC<FuturisticSearchProps> = ({
   // Update filters when they change
   useEffect(() => {
     onFilterChange({
-      sector: selectedSector,
+      sector: selectedSector === 'all_sectors' ? '' : selectedSector,
       sortBy: sortBy
     });
   }, [selectedSector, sortBy, onFilterChange]);
@@ -41,7 +41,7 @@ const FuturisticSearch: React.FC<FuturisticSearchProps> = ({
   // Reset all filters
   const resetFilters = () => {
     setSearchTerm('');
-    setSelectedSector('');
+    setSelectedSector('all_sectors');
     setSortBy('upvotes');
     onSearch('');
     onFilterChange({
@@ -170,7 +170,7 @@ const FuturisticSearch: React.FC<FuturisticSearchProps> = ({
                       <SelectValue placeholder="All Sectors" />
                     </SelectTrigger>
                     <SelectContent className="bg-zinc-900 border-zinc-700">
-                      <SelectItem value="">All Sectors</SelectItem>
+                      <SelectItem value="all_sectors">All Sectors</SelectItem>
                       {sectors.map((sector) => (
                         <SelectItem key={sector} value={sector}>
                           {sector}
