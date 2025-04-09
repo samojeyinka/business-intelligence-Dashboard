@@ -8,6 +8,7 @@ import InteractiveBackground from "@/components/InteractiveBackground";
 import DynamicCursor from "@/components/DynamicCursor";
 import Nova from "@/components/Nova";
 import ChatBox from "./ChatBox";
+import FirebaseTest from "@/components/FirebaseTest";
 
 export default function Home() {
   const [isMounted, setIsMounted] = useState(false);
@@ -46,9 +47,13 @@ export default function Home() {
           
           {/* CTA section */}
           <CtaSection />
+          
+          {/* Firebase Test Component */}
+          <div className="py-12 px-4">
+            <FirebaseTest />
+          </div>
         </main>
         
-
         <ChatBox/>
         {/* Footer */}
         <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
