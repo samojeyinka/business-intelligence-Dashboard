@@ -1,5 +1,4 @@
 import { NextApiRequest, NextApiResponse } from 'next';
-import { getVentures } from '@/lib/mockData';
 import { withApiMiddleware } from '@/lib/apiMiddleware';
 import { validateQuery } from '@/lib/validation';
 import { ventureQuerySchema } from '@/lib/validation';
@@ -33,21 +32,17 @@ async function handler(req: NextApiRequest, res: NextApiResponse) {
       isLookingForCollaborators 
     });
     
-    // Get ventures from mock data
-    const result = getVentures({
-      page,
-      limit,
-      stage,
-      search,
-      sector,
-      sort,
-      isLookingForCollaborators: isLookingForCollaborators === 'true'
+    // Return empty ventures array with pagination metadata
+    // In a real application, this would fetch data from a database
+    return res.status(200).json({
+      ventures: [],
+      pagination: {
+        total: 0,
+        pages: 0,
+        current: page,
+        limit
+      }
     });
-    
-    console.log(`Found ${result.ventures.length} ventures out of ${result.pagination.total} total`);
-    
-    // Return ventures with pagination metadata
-    return res.status(200).json(result);
   }
 }
 
