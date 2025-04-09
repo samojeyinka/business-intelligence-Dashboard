@@ -82,7 +82,7 @@ const HeroSection: React.FC = () => {
             variant="outline"
             className="border-slate-600 hover:bg-slate-800/50"
           >
-            The Coact Method
+            Our Method
           </Button>
         </motion.div>
       </div>

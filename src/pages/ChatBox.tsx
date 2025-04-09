@@ -24,7 +24,7 @@ const ChatBox: React.FC = () => {
 
   return (
     <>
-      {/* Nova toggle button */}
+      {/* Coact Bot toggle button */}
       <motion.div
         className="fixed bottom-6 right-6 z-40"
         whileHover={{ scale: 1.05 }}
@@ -40,7 +40,7 @@ const ChatBox: React.FC = () => {
         </Button>
       </motion.div>
 
-      {/* Nova chat interface */}
+      {/* Coact Bot chat interface */}
       <AnimatePresence>
         {isOpen && (
           <motion.div
@@ -55,7 +55,7 @@ const ChatBox: React.FC = () => {
                 CB
               </div>
               <div>
-                <h3 className="font-bold text-white">Coact Bot</h3>
+                <h3 className="font-bold text-white">Venture Studio Bot</h3>
                 <p className="text-xs text-slate-300">AI Assistant</p>
               </div>
             </div>
@@ -64,7 +64,7 @@ const ChatBox: React.FC = () => {
               <div className="flex flex-col h-full">
                 {messages?.length === 0 ? (
                   <div className="max-w-[80%] rounded-lg p-3 text-sm my-3 ml-3 flex px-4 py-3 bg-slate-700 text-slate-100 rounded-bl-none justify-start">
-                   Hello! I'm the Coat Bot, your AI guide to Coact Venture Studio. How can I assist you today?
+                   Hello! I'm the Venture Studio Bot, your AI guide to Venture Studio. How can I assist you today?
                   </div>
                 ) : (
                   messages?.map((message, index) => (
@@ -146,7 +146,7 @@ const ChatBox: React.FC = () => {
               <Input
                 value={input}
                 onChange={handleInputChange}
-                placeholder="Ask Nova anything..."
+                placeholder="Ask Coact Bot anything..."
                 className="bg-slate-800 border-slate-700 text-white placeholder-slate-400"
               />
               <Button

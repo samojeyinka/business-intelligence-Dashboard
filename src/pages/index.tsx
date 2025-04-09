@@ -20,7 +20,7 @@ export default function Home() {
   return (
     <>
       <Head>
-        <title>Coact Venture Studio | Building Tomorrow's Ventures Today</title>
+        <title>Venture Studio | Building Tomorrow's Ventures Today</title>
         <meta name="description" content="A collaborative ecosystem for founders, investors, operators, and advisors, dedicated to purposeful innovation and impactful ventures." />
         <meta name="viewport" content="width=device-width, initial-scale=1" />
         <link rel="icon" href="/favicon.ico" />
@@ -54,7 +54,7 @@ export default function Home() {
         <footer className="py-8 px-4 sm:px-6 lg:px-8 border-t border-slate-800">
           <div className="max-w-7xl mx-auto flex flex-col md:flex-row justify-between items-center">
             <div className="text-slate-400 mb-4 md:mb-0">
-              © {new Date().getFullYear()} Coact Venture Studio. All rights reserved.
+              © {new Date().getFullYear()} Venture Studio. All rights reserved.
             </div>
             <div className="flex space-x-6">
               <a href="#" className="text-slate-400 hover:text-white transition-colors">
@@ -69,10 +69,6 @@ export default function Home() {
             </div>
           </div>
         </footer>
-        
-        {/* Nova AI Assistant */}
-        {/* <Nova /> */}
-        <ChatBox/>
       </div>
     </>
   );
