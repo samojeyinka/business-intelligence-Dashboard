@@ -27,7 +27,7 @@ export default function SimpleVerificationForm() {
       const code = generateCode();
       
       // Send verification email
-      const response = await fetch('/api/resend', {
+      const response = await fetch('/api/send-verification', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',

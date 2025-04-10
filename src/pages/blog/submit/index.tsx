@@ -16,6 +16,7 @@ import InteractiveBackground from '@/components/InteractiveBackground';
 import { blogTags } from '@/lib/mockBlogData';
 import { sanitizeUrl } from '@/lib/sanitize';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '@/firebase-config'; 
 
 
@@ -44,6 +45,149 @@ export default function SubmitArticlePage() {
   const [verificationDialogOpen, setVerificationDialogOpen] = useState(false);
   const [verificationSent, setVerificationSent] = useState(false);
   const [verificationToken, setVerificationToken] = useState<string | null>(null);
+  const [verificationCode, setVerificationCode] = useState<string[]>(Array(6).fill(''));
+  const [generatedCode, setGeneratedCode] = useState<string>('');
+  const [verificationError, setVerificationError] = useState<string>('');
+
+  const [coverImagePreview, setCoverImagePreview] = useState<string>('');
+const [isCoverImageUploading, setIsCoverImageUploading] = useState(false);
+const coverFileInputRef = useRef<HTMLInputElement>(null);
+
+  // Generate a random 6-digit code
+  const generateCode = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+  // Handle verification code input changes
+  const handleVerificationCodeChange = (index: number, value: string) => {
+    // Only allow single digits and move to next input
+    if (/^\d$/.test(value) || value === '') {
+      const newCode = [...verificationCode];
+      newCode[index] = value;
+      setVerificationCode(newCode);
+      
+      // Auto-focus next input if a digit was entered
+      if (value !== '' && index < 5) {
+        const nextInput = document.getElementById(`verification-input-${index + 1}`);
+        if (nextInput) nextInput.focus();
+      }
+    }
+  };
+
+
+  
+  // Handle backspace to move to previous input
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && verificationCode[index] === '' && index > 0) {
+      const prevInput = document.getElementById(`verification-input-${index - 1}`);
+      if (prevInput) prevInput.focus();
+    }
+  };
+
+
+  const sendVerificationEmail = async () => {
+    if (!formData.author.email) {
+      setErrors(prev => ({
+        ...prev,
+        'author.email': 'Email is required for verification'
+      }));
+      return;
+    }
+    
+    setIsSubmitting(true);
+    
+    try {
+      const code = generateCode();
+      
+      // Send verification email via API
+      const response = await fetch('/api/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: formData.author.email, // Using author.email from your form data
+          code: code
+        }),
+      });
+  
+      if (!response.ok) {
+        throw new Error('Failed to send verification email');
+      }
+  
+      const data = await response.json();
+      
+      // Store the generated code
+      setGeneratedCode(code);
+      setVerificationSent(true);
+      
+      // For demo purposes, you might want to show the code in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Verification code:', code);
+      }
+      
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      setErrors(prev => ({
+        ...prev,
+        submit: error instanceof Error ? error.message : 'Failed to send verification email. Please try again.'
+      }));
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+   // Handle verification confirmation
+   const handleVerificationConfirm = async () => {
+    await sendVerificationEmail();
+  };
+
+   // Handle article submission after verification
+   const handleVerifiedSubmission = async () => {
+    const enteredCode = verificationCode.join('');
+    
+    if (enteredCode.length !== 6) {
+      setVerificationError('Please enter the full 6-digit code');
+      return;
+    }
+    
+    if (enteredCode !== generatedCode) {
+      setVerificationError('Invalid verification code');
+      return;
+    }
+    
+    setIsSubmitting(true);
+
+    try {
+      const articleData = {
+        title: formData.title,
+        excerpt: formData.excerpt,
+        content: formData.content,
+        coverImage: formData.coverImage || null,
+        tags: selectedTags,
+        author: {
+          name: formData.author.name,
+          role: formData.author.role,
+          avatar: formData.author.avatar || null, // Ensure this is set
+          profileUrl: formData.author.profileUrl || null,
+          email: formData.author.email
+        },
+        status: 'pending',
+        verified: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
+      };
+  
+      // Add to Firestore
+      const docRef = await addDoc(collection(db, "submitted-articles"), articleData);
+      console.log("Article submitted with ID: ", docRef.id);
+      
+      router.push('/blog/submit/success');
+    } catch (error) {
+      console.error('Error submitting article:', error);
+      setErrors({ submit: 'Failed to submit article. Please try again.' });
+    }
+  };
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
@@ -90,7 +234,7 @@ export default function SubmitArticlePage() {
     }
   };
   
-  // Handle file upload
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
@@ -114,7 +258,7 @@ export default function SubmitArticlePage() {
       return;
     }
     
-    // Create a preview
+    // Create preview
     const reader = new FileReader();
     reader.onload = (event) => {
       if (event.target?.result) {
@@ -127,30 +271,43 @@ export default function SubmitArticlePage() {
     setIsUploading(true);
     
     try {
-      const formData = new FormData();
-      formData.append('file', file);
-      
-      const response = await fetch('/api/upload/profile-image', {
-        method: 'POST',
-        body: formData,
+      // Convert to base64 for API upload
+      const base64Data = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
       });
+  
+      const fileName = `avatar-${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
       
-      const data = await response.json();
-      
+      // Upload to our API endpoint
+      const response = await fetch('/api/upload-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName,
+          fileData: base64Data
+        }),
+      });
+  
       if (!response.ok) {
-        throw new Error(data.error || 'Failed to upload image');
+        throw new Error('Upload failed');
       }
+  
+      const { url } = await response.json();
       
-      // Update form data with the file path
+      // Update form data with the public URL
       setFormData(prev => ({
         ...prev,
         author: {
           ...prev.author,
-          avatar: data.filePath
+          avatar: url
         }
       }));
       
-      // Clear any existing errors
+      // Clear any errors
       if (errors['author.avatar']) {
         setErrors(prev => {
           const newErrors = { ...prev };
@@ -159,7 +316,7 @@ export default function SubmitArticlePage() {
         });
       }
     } catch (error) {
-      console.error('Error uploading file:', error);
+      console.error('Upload failed:', error);
       setErrors(prev => ({
         ...prev,
         'author.avatar': 'Failed to upload image. Please try again.'
@@ -168,56 +325,77 @@ export default function SubmitArticlePage() {
       setIsUploading(false);
     }
   };
+
+  const handleCoverImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
   
-  // Send verification email
-  const sendVerificationEmail = async () => {
-    if (!formData.author.email) {
-      setErrors(prev => ({
-        ...prev,
-        'author.email': 'Email is required for verification'
-      }));
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setErrors(prev => ({ ...prev, 'coverImage': 'Please upload a valid image file (jpg, png, gif, webp)' }));
       return;
     }
-    
-    setIsSubmitting(true);
-    
-    try {
-      const response = await fetch('/api/blog/verify-email', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          email: formData.author.email,
-          articleData: {
-            ...formData,
-            tags: selectedTags
-          }
-        }),
-      });
-      
-      const data = await response.json();
-      
-      if (!response.ok) {
-        throw new Error(data.error || 'Failed to send verification email');
+  
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setErrors(prev => ({ ...prev, 'coverImage': 'Image size should be less than 5MB' }));
+      return;
+    }
+  
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      if (event.target?.result) {
+        setCoverImagePreview(event.target.result as string);
       }
+    };
+    reader.readAsDataURL(file);
+  
+    // Upload the file
+    setIsCoverImageUploading(true);
+  
+    try {
+      // Convert to base64 for API upload
+      const base64Data = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(file);
+      });
+  
+      const fileName = `cover-${Date.now()}-${file.name.replace(/\s+/g, '-')}`;
       
-      // Set verification sent flag
-      setVerificationSent(true);
+      // Upload to our API endpoint
+      const response = await fetch('/api/upload-image', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fileName, fileData: base64Data }),
+      });
+  
+      if (!response.ok) throw new Error('Upload failed');
+  
+      const { url } = await response.json();
       
-      // Store the token (in a real app, this would be sent via email)
-      setVerificationToken(data.token);
+      // Update form data with the public URL
+      setFormData(prev => ({ ...prev, coverImage: url }));
       
+      // Clear any errors
+      if (errors['coverImage']) {
+        setErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors['coverImage'];
+          return newErrors;
+        });
+      }
     } catch (error) {
-      console.error('Error sending verification email:', error);
-      setErrors(prev => ({
-        ...prev,
-        submit: 'Failed to send verification email. Please try again.'
-      }));
+      console.error('Upload failed:', error);
+      setErrors(prev => ({ ...prev, 'coverImage': 'Failed to upload image. Please try again.' }));
     } finally {
-      setIsSubmitting(false);
+      setIsCoverImageUploading(false);
     }
   };
+  
+
 
   // Handle tag selection
   const toggleTag = (tag: string) => {
@@ -280,54 +458,8 @@ export default function SubmitArticlePage() {
     setVerificationDialogOpen(true);
   };
   
-  // Handle verification confirmation
-  const handleVerificationConfirm = async () => {
-    // Send verification email
-    await sendVerificationEmail();
-  };
+
   
-  // Handle article submission after verification
-  const handleVerifiedSubmission = async () => {
-    if (!verificationToken) return;
-    
-    setIsSubmitting(true);
-    
-    try {
-      // Prepare the article data to be saved
-      const articleData = {
-        title: formData.title,
-        excerpt: formData.excerpt,
-        content: formData.content,
-        coverImage: formData.coverImage,
-        tags: selectedTags,
-        author: {
-          name: formData.author.name,
-          role: formData.author.role,
-          avatar: formData.author.avatar,
-          profileUrl: formData.author.profileUrl,
-          email: formData.author.email
-        },
-        status: 'pending', // You might want to track submission status
-        verificationToken: verificationToken,
-        createdAt: serverTimestamp(), // Firestore server timestamp
-        updatedAt: serverTimestamp()
-      };
-  
-      // Add the document to the "submitted-articles" collection
-      const docRef = await addDoc(collection(db, "submitted-articles"), articleData);
-      
-      console.log("Article submitted with ID: ", docRef.id);
-      
-      // Redirect to success page
-      router.push('/blog/submit/success');
-    } catch (error) {
-      console.error('Error submitting article:', error);
-      setErrors({ submit: 'Failed to submit article. Please try again.' });
-    } finally {
-      setIsSubmitting(false);
-      setVerificationDialogOpen(false);
-    }
-  };
   
   return (
     <>
@@ -412,17 +544,65 @@ export default function SubmitArticlePage() {
                   {errors.content && <p className="text-red-500 text-sm mt-1">{errors.content}</p>}
                 </div>
                 
-                <div className="space-y-2">
-                  <Label htmlFor="coverImage">Cover Image URL (optional)</Label>
-                  <Input
-                    id="coverImage"
-                    name="coverImage"
-                    placeholder="https://example.com/your-image.jpg"
-                    value={formData.coverImage}
-                    onChange={handleChange}
-                    className="bg-zinc-900/50 border border-zinc-700"
-                  />
-                </div>
+                <div className=" space-y-4 p-4 border border-zinc-800 rounded-lg bg-zinc-900/30">
+  <Label>Cover Image (optional)</Label>
+
+  <div className="flex items-center gap-2 justify-between">
+  <div className="flex flex-col gap-2 w-[50%]">
+    <div 
+      className={`relative flex items-center justify-center border-2 border-dashed rounded-lg p-4 transition-all cursor-pointer hover:bg-zinc-800/30 ${errors['coverImage'] ? 'border-red-500' : 'border-zinc-700'}`}
+      onClick={() => coverFileInputRef.current?.click()}
+    >
+      <input
+        ref={coverFileInputRef}
+        type="file"
+        id="coverImage"
+        accept="image/jpeg,image/png,image/gif,image/webp"
+        className="hidden"
+        onChange={handleCoverImageUpload}
+        disabled={isCoverImageUploading}
+      />
+      <div className="flex flex-col items-center gap-2 py-2">
+        <Upload className="w-5 h-5 text-purple-400" />
+        <span className="text-sm text-zinc-400">
+          {isCoverImageUploading ? 'Uploading...' : 'Click to upload cover image'}
+        </span>
+        <span className="text-xs text-zinc-500">
+          JPG, PNG, GIF or WEBP (max 5MB)
+        </span>
+      </div>
+    </div>
+    {errors['coverImage'] && <p className="text-red-500 text-sm">{errors['coverImage']}</p>}
+  </div>
+
+  {/* Cover image preview */}
+
+  <div className="flex flex-col gap-1 items-center mx-auto">
+  {coverImagePreview ? (
+  <div className="mt-2 rounded-md h-16 w-[60%] border-2 border-purple-500/30 overflow-hidden mx-auto">
+    <img 
+      src={coverImagePreview} 
+      alt="Cover preview" 
+      className="w-full h-full object-cover"
+    />
+  </div>
+) : (
+  <div>
+ <Avatar className="h-16 w-[4rem] rounded-sm border-2 border-purple-500/30" style={{
+    backgroundColor: 'rgba(88, 28, 135, 0.5)'}}>
+                        {coverImagePreview ? (
+                          <AvatarImage src={coverImagePreview} alt="Cover Image preview" />
+                        ) : null}
+                        <AvatarFallback className="bg-inherit text-purple-200 text-lg">
+                          {formData.author.name ? formData.title.charAt(0).toUpperCase() : '?'}
+                        </AvatarFallback>
+                      </Avatar>
+  </div>
+)}
+    <p className="text-xs text-zinc-500 mt-2">Preview</p>
+    </div>
+  </div>
+</div>
                 
                 {/* Author Information Section */}
                 <div className="space-y-4 p-4 border border-zinc-800 rounded-lg bg-zinc-900/30">
@@ -589,13 +769,22 @@ export default function SubmitArticlePage() {
                 )}
                 
                 <div className="pt-4">
-                  <Button 
+                  {/* <Button 
                     type="submit" 
                     className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
                     disabled={isSubmitting}
                   >
                     {isSubmitting ? 'Submitting...' : 'Submit Article'}
-                  </Button>
+                  </Button> */}
+
+<Button 
+  type="submit" 
+  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
+  disabled={isSubmitting || isUploading || isCoverImageUploading}
+>
+  {isSubmitting ? 'Submitting...' : 
+   isUploading || isCoverImageUploading ? 'Uploading images...' : 'Submit Article'}
+</Button>
                 </div>
               </form>
             </motion.div>
@@ -616,7 +805,7 @@ export default function SubmitArticlePage() {
           {!verificationSent ? (
             <>
               <div className="py-4">
-                <p className="mb-4">We'll send a verification link to:</p>
+                <p className="mb-4">We'll send a verification code to:</p>
                 <div className="p-3 bg-zinc-800 rounded-md flex items-center gap-2">
                   <Mail className="w-4 h-4 text-purple-400" />
                   <span>{formData.author.email}</span>
@@ -635,7 +824,7 @@ export default function SubmitArticlePage() {
                   disabled={isSubmitting}
                   className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
                 >
-                  {isSubmitting ? 'Sending...' : 'Send Verification Email'}
+                  {isSubmitting ? 'Sending...' : 'Send Verification Code'}
                 </Button>
               </DialogFooter>
             </>
@@ -649,25 +838,47 @@ export default function SubmitArticlePage() {
                   </AlertDescription>
                 </Alert>
                 
-                <p>Please check your email and click the verification link to publish your article.</p>
+                <p className="text-zinc-300">Please check your email and enter the 6-digit verification code below:</p>
                 
-                {/* This is just for demo purposes - in a real app, this would be handled via email */}
-                <div className="p-3 bg-zinc-800 rounded-md">
-                  <p className="text-sm text-zinc-400 mb-2">Demo: Click the button below to simulate clicking the verification link in your email</p>
-                  <Button 
-                    onClick={handleVerifiedSubmission}
-                    disabled={isSubmitting}
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
-                  >
-                    {isSubmitting ? 'Verifying...' : 'Verify and Publish Article'}
-                  </Button>
+                {/* 6-digit verification code input */}
+                <div className="flex justify-center gap-2 my-4">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <Input
+                      key={index}
+                      id={`verification-input-${index}`}
+                      type="text"
+                      maxLength={1}
+                      value={verificationCode[index]}
+                      onChange={(e) => handleVerificationCodeChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      className="w-12 h-12 text-center text-xl bg-zinc-800 border-zinc-700 focus:border-purple-500"
+                      autoFocus={index === 0}
+                    />
+                  ))}
                 </div>
+                
+                {verificationError && (
+                  <p className="text-red-500 text-sm text-center">{verificationError}</p>
+                )}
+                
+                <Button 
+                  onClick={handleVerifiedSubmission}
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  {isSubmitting ? 'Verifying...' : 'Verify and Publish Article'}
+                </Button>
               </div>
               
               <DialogFooter>
                 <Button
                   variant="outline"
-                  onClick={() => setVerificationDialogOpen(false)}
+                  onClick={() => {
+                    setVerificationDialogOpen(false);
+                    setVerificationSent(false);
+                    setVerificationCode(Array(6).fill(''));
+                    setVerificationError('');
+                  }}
                 >
                   Close
                 </Button>
