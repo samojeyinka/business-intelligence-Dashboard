@@ -1,6 +1,5 @@
 import { NextApiRequest, NextApiResponse } from 'next';
 import { z } from 'zod';
-import { sanitizeObject } from './sanitize';
 
 // Helper function to validate request body against a Zod schema
 export function validateBody<T>(
@@ -9,9 +8,7 @@ export function validateBody<T>(
   res: NextApiResponse
 ): { success: true; data: T } | { success: false } {
   try {
-    // Sanitize input before validation
-    const sanitizedBody = sanitizeObject(req.body);
-    const data = schema.parse(sanitizedBody);
+    const data = schema.parse(req.body);
     return { success: true, data };
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -35,9 +32,7 @@ export function validateQuery<T>(
   res: NextApiResponse
 ): { success: true; data: T } | { success: false } {
   try {
-    // Sanitize input before validation
-    const sanitizedQuery = sanitizeObject(req.query);
-    const data = schema.parse(sanitizedQuery);
+    const data = schema.parse(req.query);
     return { success: true, data };
   } catch (error) {
     if (error instanceof z.ZodError) {
@@ -71,7 +66,7 @@ export const slugSchema = z.object({
 // Venture-specific schemas
 export const ventureQuerySchema = paginationSchema.extend({
   stage: z.string().optional(),
-  sort: z.enum(['upvotes', 'recent']).optional().default('upvotes'),
+  sort: z.enum(['upvotes', 'newest', 'oldest']).optional().default('upvotes'),
   search: z.string().optional().default(''),
   sector: z.string().optional().default(''),
   isLookingForCollaborators: z.enum(['true', 'false']).optional()

@@ -16,6 +16,7 @@ import { ArrowLeft, Check, Users } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/firebase-config';
 import ChatBox from '../ChatBox';
+import supabase from "../../supabase-client"
 
 const JoinVenturePage = () => {
 
@@ -112,22 +113,7 @@ const JoinVenturePage = () => {
     return isValid;
   };
 
-  // const handleSubmit = async (e: React.FormEvent) => {
-  //   e.preventDefault();
-    
-  //   if (validateForm()) {
-  //     setIsSubmitting(true);
-      
-  //     // Simulate API call
-  //     setTimeout(() => {
-  //       setIsSubmitting(false);
-  //       setIsSubmitted(true);
-        
-  //       // In a real app, you would submit the form data to your API here
-  //       console.log('Form submitted:', formData);
-  //     }, 2000);
-  //   }
-  // };
+  
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -140,6 +126,7 @@ const JoinVenturePage = () => {
         const docRef = await addDoc(collection(db, "join-requests"), {
           name: formData.name,
           email: formData.email,
+          linkedin: formData.linkedin,
           interests: formData.interests, // This will be saved as an array
           message: formData.message,
           createdAt: new Date() // Add a timestamp
@@ -154,6 +141,24 @@ const JoinVenturePage = () => {
       } finally {
         setIsSubmitting(false);
       }
+    }
+  };
+
+  const [todoList, setTodoList] = useState([]);
+  const [newTodo, setNewTodo] = useState("");
+
+  const addTodo = async()=>{
+    const newTodoData = {
+      name:newTodo,
+      isCompleted:false,
+    };
+
+    const {data, error} =  await supabase.from("TodoList").insert([newTodoData]).single();
+    if(error){
+      console.log("Error adding todo: ", error);
+    } else {
+      setTodoList((prev) => [...prev, data]);
+      setNewTodo("")
     }
   };
 
@@ -172,6 +177,8 @@ const JoinVenturePage = () => {
       {isMounted && <DynamicCursor />}
       
       <Header />
+
+   
       
       <main className="container mx-auto px-4 py-32 relative z-10">
         <motion.div
@@ -291,7 +298,7 @@ const JoinVenturePage = () => {
                   </Label>
                   <Input
                     id="linkedin"
-                    type="url"
+                    type="text"
                     value={formData.linkedin}
                     onChange={(e) => handleInputChange('linkedin', e.target.value)}
                     placeholder="https://www.linkedin.com/in/yourprofile"
