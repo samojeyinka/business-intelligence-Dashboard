@@ -1,7 +1,7 @@
-import { initializeApp, getApps, getApp } from "firebase/app";
-import { getFirestore, connectFirestoreEmulator } from "firebase/firestore";
 
-// Firebase configuration
+import { initializeApp, getApps, getApp } from "firebase/app";
+import { getFirestore } from "firebase/firestore";
+
 const firebaseConfig = {
   apiKey: process.env.NEXT_PUBLIC_FIREBASE_API_KEY,
   authDomain: process.env.NEXT_PUBLIC_FIREBASE_AUTH_DOMAIN,
@@ -12,29 +12,6 @@ const firebaseConfig = {
   measurementId: process.env.NEXT_PUBLIC_FIREBASE_MEASUREMENT_ID,
 };
 
-// Initialize Firebase with error handling
-let app;
-let db;
 
-try {
-  // Check if Firebase is already initialized
-  if (getApps().length === 0) {
-    console.log("Initializing Firebase app...");
-    app = initializeApp(firebaseConfig);
-  } else {
-    console.log("Firebase app already initialized");
-    app = getApp();
-  }
-
-  // Initialize Firestore
-  db = getFirestore(app);
-  console.log("Firestore initialized successfully");
-
-  // Log Firebase configuration (without sensitive data)
-  console.log("Firebase initialized with project:", process.env.NEXT_PUBLIC_FIREBASE_PROJECT_ID);
-} catch (error) {
-  console.error("Error initializing Firebase:", error);
-  throw new Error("Failed to initialize Firebase. Check your configuration.");
-}
-
-export { app, db };
+ const app = getApps().length === 0 ? initializeApp(firebaseConfig) : getApp();
+ export const db = getFirestore(app);

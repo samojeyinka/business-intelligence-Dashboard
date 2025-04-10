@@ -15,6 +15,10 @@ import Header from '@/components/Header';
 import InteractiveBackground from '@/components/InteractiveBackground';
 import { blogTags } from '@/lib/mockBlogData';
 import { sanitizeUrl } from '@/lib/sanitize';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/firebase-config'; 
+
+
 
 export default function SubmitArticlePage() {
   const router = useRouter();
@@ -289,9 +293,30 @@ export default function SubmitArticlePage() {
     setIsSubmitting(true);
     
     try {
-      // In a real app, this would verify the token and publish the article
-      // For this demo, we'll simulate a successful verification
-      await new Promise(resolve => setTimeout(resolve, 1500));
+      // Prepare the article data to be saved
+      const articleData = {
+        title: formData.title,
+        excerpt: formData.excerpt,
+        content: formData.content,
+        coverImage: formData.coverImage,
+        tags: selectedTags,
+        author: {
+          name: formData.author.name,
+          role: formData.author.role,
+          avatar: formData.author.avatar,
+          profileUrl: formData.author.profileUrl,
+          email: formData.author.email
+        },
+        status: 'pending', // You might want to track submission status
+        verificationToken: verificationToken,
+        createdAt: serverTimestamp(), // Firestore server timestamp
+        updatedAt: serverTimestamp()
+      };
+  
+      // Add the document to the "submitted-articles" collection
+      const docRef = await addDoc(collection(db, "submitted-articles"), articleData);
+      
+      console.log("Article submitted with ID: ", docRef.id);
       
       // Redirect to success page
       router.push('/blog/submit/success');
@@ -303,7 +328,7 @@ export default function SubmitArticlePage() {
       setVerificationDialogOpen(false);
     }
   };
-
+  
   return (
     <>
       <Head>
