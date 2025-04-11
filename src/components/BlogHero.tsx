@@ -7,7 +7,7 @@ interface BlogHeroProps {
   articleCount: number;
 }
 
-const BlogHero: React.FC<BlogHeroProps> = ({ contributorCount, articleCount }) => {
+const BlogHero: React.FC<BlogHeroProps> = ({ contributorCount, articleCount,ideaCount }) => {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
   const [isHovering, setIsHovering] = useState(false);
   
@@ -178,7 +178,7 @@ const BlogHero: React.FC<BlogHeroProps> = ({ contributorCount, articleCount }) =
                 <Lightbulb className="w-5 h-5 text-pink-400" />
               </div>
               <div className="text-left">
-                <p className="text-2xl font-bold text-white">∞</p>
+                <p className="text-2xl font-bold text-white">{ideaCount}</p>
                 <p className="text-sm text-zinc-400">Ideas Shared</p>
               </div>
             </div>

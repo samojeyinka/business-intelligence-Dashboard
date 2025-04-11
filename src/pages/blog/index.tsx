@@ -141,6 +141,11 @@ export default function BlogPage() {
             contributorCount={allPosts.reduce((acc, post) => 
               acc + (post.author.name ? 1 : 0), 0)} 
             articleCount={allPosts.length} 
+            ideaCount={allPosts.filter(post => 
+              post.categories?.some(category => 
+                category.toLowerCase() === 'idea'
+              )
+            ).length}
           />
           
           <section className="py-8 px-4">

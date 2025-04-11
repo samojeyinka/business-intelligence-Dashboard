@@ -43,6 +43,7 @@ export default function SubmitArticlePage() {
 
   const interestOptions = [
     'Innovation',
+    'Idea',
     'Collaboration',
     'Sustainability',
     'AI & Technology',
