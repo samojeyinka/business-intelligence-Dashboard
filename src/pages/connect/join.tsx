@@ -11,12 +11,11 @@ import Header from '@/components/Header';
 import DynamicCursor from '@/components/DynamicCursor';
 import FloatingElements from '@/components/FloatingElements';
 import VentureParticleEffect from '@/components/VentureParticleEffect';
-import Nova from '@/components/Nova';
 import { ArrowLeft, Check, Users } from 'lucide-react';
 import { collection, addDoc } from 'firebase/firestore';
 import { db } from '@/firebase-config';
 import ChatBox from '../ChatBox';
-import supabase from "../../supabase-client"
+
 
 const JoinVenturePage = () => {
 
@@ -144,23 +143,6 @@ const JoinVenturePage = () => {
     }
   };
 
-  const [todoList, setTodoList] = useState([]);
-  const [newTodo, setNewTodo] = useState("");
-
-  const addTodo = async()=>{
-    const newTodoData = {
-      name:newTodo,
-      isCompleted:false,
-    };
-
-    const {data, error} =  await supabase.from("TodoList").insert([newTodoData]).single();
-    if(error){
-      console.log("Error adding todo: ", error);
-    } else {
-      setTodoList((prev) => [...prev, data]);
-      setNewTodo("")
-    }
-  };
 
   return (
     <div 

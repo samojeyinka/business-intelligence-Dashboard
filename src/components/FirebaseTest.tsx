@@ -22,7 +22,7 @@ const FirebaseTest = () => {
       // If we get here, the connection is successful
       const documents = snapshot.docs.map(doc => ({
         id: doc.id,
-        ...doc.data()
+        ...doc.data()``
       }));
       
       setData(documents);
