@@ -11,22 +11,52 @@ import BlogFilter from '@/components/BlogFilter';
 import BlogPostCard from '@/components/BlogPostCard';
 import ImmersiveReader from '@/components/ImmersiveReader';
 import ContributionCta from '@/components/ContributionCta';
-import { mockBlogPosts, blogCategories, blogTags } from '@/lib/mockBlogData';
-import { BlogPost } from '@/components/BlogPostCard';
+import { fetchBlogPosts } from '@/lib/firestore-utils';
 
 export default function BlogPage() {
   const [isMounted, setIsMounted] = useState(false);
-  const [filteredPosts, setFilteredPosts] = useState<BlogPost[]>(mockBlogPosts);
+  const [allPosts, setAllPosts] = useState<FirestoreBlogPost[]>([]);
+  const [filteredPosts, setFilteredPosts] = useState<FirestoreBlogPost[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [filters, setFilters] = useState({
     category: 'all',
     tag: '',
     view: 'grid'
   });
-  const [selectedPost, setSelectedPost] = useState<BlogPost | null>(null);
+  const [selectedPost, setSelectedPost] = useState<FirestoreBlogPost | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [categories, setCategories] = useState<string[]>([]);
+  const [tags, setTags] = useState<string[]>([]);
   
-  // Only show dynamic cursor on client-side to prevent hydration errors
+  // Fetch data on mount
   useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const posts = await fetchBlogPosts();
+        setAllPosts(posts);
+        setFilteredPosts(posts);
+        
+        // Extract unique tags and categories
+        const allTags = new Set<string>();
+        const allCategories = new Set<string>();
+        
+        posts.forEach(post => {
+          post.tags?.forEach(tag => allTags.add(tag));
+          // If you have categories in your data, add them here
+          // Otherwise we'll use tags as categories
+          post.categories?.forEach(category => allCategories.add(category));
+        });
+        
+        setTags(Array.from(allTags));
+        setCategories(Array.from(allCategories));
+      } catch (error) {
+        console.error('Error fetching posts:', error);
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchData();
     setIsMounted(true);
   }, []);
   
@@ -44,7 +74,7 @@ export default function BlogPage() {
   
   // Filter posts based on search term and filters
   const filterPosts = (term: string, currentFilters: typeof filters) => {
-    let results = [...mockBlogPosts];
+    let results = [...allPosts];
     
     // Apply search term filter
     if (term) {
@@ -52,21 +82,21 @@ export default function BlogPage() {
       results = results.filter(post => 
         post.title.toLowerCase().includes(lowercaseTerm) || 
         post.excerpt.toLowerCase().includes(lowercaseTerm) ||
-        post.tags.some(tag => tag.toLowerCase().includes(lowercaseTerm))
+        (post.tags && post.tags.some(tag => tag.toLowerCase().includes(lowercaseTerm)))
       );
     }
     
-    // Apply category filter
+    // Apply category filter (using tags as categories)
     if (currentFilters.category !== 'all') {
       results = results.filter(post => 
-        post.tags.some(tag => tag === currentFilters.category)
+        post.categories && post.categories.includes(currentFilters.category)
       );
     }
     
     // Apply tag filter
     if (currentFilters.tag) {
       results = results.filter(post => 
-        post.tags.includes(currentFilters.tag)
+        post.tags && post.tags.includes(currentFilters.tag)
       );
     }
     
@@ -74,59 +104,54 @@ export default function BlogPage() {
   };
   
   // Handle post selection
-  const handlePostSelect = (post: BlogPost) => {
+  const handlePostSelect = (post: FirestoreBlogPost) => {
     setSelectedPost(post);
-    // Prevent scrolling when reader is open
     document.body.style.overflow = 'hidden';
   };
   
   // Handle reader close
   const handleReaderClose = () => {
     setSelectedPost(null);
-    // Restore scrolling
     document.body.style.overflow = 'auto';
   };
-  
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-black text-white flex items-center justify-center">
+        <div className="animate-pulse">Loading articles...</div>
+      </div>
+    );
+  }
+
   return (
     <>
       <Head>
         <title>Our Open Blog | Coact Ventures</title>
         <meta name="description" content="Explore our open contributions blog - a platform fostering collective knowledge through collaborative efforts." />
-        <style>{`
-          @keyframes shimmer {
-            0% { background-position: 0% 0; }
-            100% { background-position: 100% 0; }
-          }
-        `}</style>
       </Head>
       
       {isMounted && <DynamicCursor />}
       
       <div className="min-h-screen bg-black text-white relative">
         <InteractiveBackground />
-        
-        {/* Header */}
         <Header />
         
-        {/* Main content */}
         <main className="pt-20">
-          {/* Hero section */}
           <BlogHero 
-            contributorCount={15} 
-            articleCount={mockBlogPosts.length} 
+            contributorCount={allPosts.reduce((acc, post) => 
+              acc + (post.author.name ? 1 : 0), 0)} 
+            articleCount={allPosts.length} 
           />
           
-          {/* Filter section */}
           <section className="py-8 px-4">
             <BlogFilter 
               onSearch={handleSearch}
               onFilterChange={handleFilterChange}
-              categories={blogCategories}
-              tags={blogTags}
+              categories={categories}
+              tags={tags}
             />
           </section>
           
-          {/* Blog posts grid */}
           <section className="py-8 px-4">
             <div className="max-w-7xl mx-auto">
               {filteredPosts.length > 0 ? (
@@ -167,7 +192,17 @@ export default function BlogPage() {
                     {filteredPosts.map((post) => (
                       <BlogPostCard 
                         key={post.id} 
-                        post={post} 
+                        post={{
+                          ...post,
+                          publishedAt: post.createdAt.toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'short',
+                            day: 'numeric'
+                          }),
+                          readingTime: `${Math.ceil(post.content.split(' ').length / 200)} min read`,
+                          commentCount: 0, // You can fetch this from Firestore if needed
+                          contributedBy: [] // You can add this data if available
+                        }} 
                         onSelect={handlePostSelect}
                         variant={filters.view === 'list' ? 'expanded' : 'compact'}
                       />
@@ -185,7 +220,7 @@ export default function BlogPage() {
                     onClick={() => {
                       setSearchTerm('');
                       setFilters({category: 'all', tag: '', view: filters.view});
-                      setFilteredPosts(mockBlogPosts);
+                      setFilteredPosts(allPosts);
                     }}
                   >
                     Reset Filters
@@ -195,14 +230,22 @@ export default function BlogPage() {
             </div>
           </section>
           
-          {/* Contribution CTA */}
           <ContributionCta />
         </main>
         
-        {/* Immersive reader */}
         {selectedPost && (
           <ImmersiveReader 
-            post={selectedPost} 
+            post={{
+              ...selectedPost,
+              publishedAt: selectedPost.createdAt.toLocaleDateString('en-US', {
+                year: 'numeric',
+                month: 'short',
+                day: 'numeric'
+              }),
+              readingTime: `${Math.ceil(selectedPost.content.split(' ').length / 200)} min read`,
+              commentCount: 0,
+              contributedBy: []
+            }} 
             onClose={handleReaderClose} 
           />
         )}

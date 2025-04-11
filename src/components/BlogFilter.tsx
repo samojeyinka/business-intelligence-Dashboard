@@ -155,7 +155,8 @@ const BlogFilter: React.FC<BlogFilterProps> = ({
               type="button" 
               variant="outline" 
               className="border-zinc-700 bg-zinc-800/50 text-purple-400 hover:text-purple-300 hover:border-purple-500/50 transition-all duration-300"
-            >
+              onClick={() => window.location.href = '/blog/submit'}
+           >
               <Sparkles className="h-4 w-4 mr-2" />
               Contribute
             </Button>
