@@ -18,11 +18,14 @@ import { sanitizeUrl } from '@/lib/sanitize';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import { getStorage, ref, uploadBytes, getDownloadURL } from 'firebase/storage';
 import { db } from '@/firebase-config'; 
+import { Checkbox } from '@/components/ui/checkbox';
 
 
 
 export default function SubmitArticlePage() {
   const router = useRouter();
+  
+  const DEFAULT_COVER_IMAGE = '/public/images/rect.png';
   const [formData, setFormData] = useState({
     title: '',
     excerpt: '',
@@ -34,8 +37,20 @@ export default function SubmitArticlePage() {
       avatar: '',
       profileUrl: '',
       email: ''
-    }
+    },
+    categories: [] as string[], 
   });
+
+  const interestOptions = [
+    'Innovation',
+    'Collaboration',
+    'Sustainability',
+    'AI & Technology',
+    'Venture Building',
+    'Education',
+    'Global Perspectives'
+  ];
+
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [selectedTags, setSelectedTags] = useState<string[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -74,6 +89,7 @@ const coverFileInputRef = useRef<HTMLInputElement>(null);
     }
   };
 
+ 
 
   
   // Handle backspace to move to previous input
@@ -165,6 +181,7 @@ const coverFileInputRef = useRef<HTMLInputElement>(null);
         content: formData.content,
         coverImage: formData.coverImage || null,
         tags: selectedTags,
+        categories: formData.categories,
         author: {
           name: formData.author.name,
           role: formData.author.role,
@@ -191,49 +208,49 @@ const coverFileInputRef = useRef<HTMLInputElement>(null);
 
   // Handle input changes
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-    const { name, value } = e.target;
+    const { name, value} = e.target;
     
-    // Handle nested author fields
-    if (name.startsWith('author.')) {
-      const authorField = name.split('.')[1];
-      
-      // Special handling for profile URL
-      if (authorField === 'profileUrl') {
-        const sanitizedUrl = sanitizeUrl(value);
-        setFormData(prev => ({
-          ...prev,
-          author: {
-            ...prev.author,
-            [authorField]: sanitizedUrl
-          }
-        }));
-      } else {
-        setFormData(prev => ({
-          ...prev,
-          author: {
-            ...prev.author,
-            [authorField]: value
-          }
-        }));
-      }
-    } else {
-      // Handle regular fields
+     // Handle nested author fields
+  if (name.startsWith('author.')) {
+    const authorField = name.split('.')[1];
+    
+    // Special handling for profile URL
+    if (authorField === 'profileUrl') {
+      const sanitizedUrl = sanitizeUrl(value);
       setFormData(prev => ({
         ...prev,
-        [name]: value
+        author: {
+          ...prev.author,
+          [authorField]: sanitizedUrl
+        }
+      }));
+    } else {
+      setFormData(prev => ({
+        ...prev,
+        author: {
+          ...prev.author,
+          [authorField]: value
+        }
       }));
     }
-    
-    // Clear error when user types
-    if (errors[name]) {
-      setErrors(prev => {
-        const newErrors = { ...prev };
-        delete newErrors[name];
-        return newErrors;
-      });
-    }
-  };
+  } else {
+    // Handle regular fields
+    setFormData(prev => ({
+      ...prev,
+      [name]: value
+    }));
+  }
   
+  // Clear error when user types
+  if (errors[name]) {
+    setErrors(prev => {
+      const newErrors = { ...prev };
+      delete newErrors[name];
+      return newErrors;
+    });
+  }
+};
+
 
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -444,9 +461,44 @@ const coverFileInputRef = useRef<HTMLInputElement>(null);
       newErrors.tags = 'Please select at least one tag';
     }
     
+    if (formData.categories.length === 0) {
+      newErrors.categories = 'Please select at least one category';
+    }
+
+    // Validate cover image
+  if (!formData.coverImage) {
+    newErrors['coverImage'] = 'Cover image is required';
+  }
+
+  // Validate profile picture
+  if (!formData.author.avatar) {
+    newErrors['author.avatar'] = 'Profile picture is required';
+  }
+
+
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
+
+
+  const handleCategoryChange = (category: string, checked: boolean) => {
+    setFormData(prev => ({
+      ...prev,
+      categories: checked
+        ? [...prev.categories, category]
+        : prev.categories.filter(c => c !== category)
+    }));
+    
+    // Clear error if present
+    if (errors.categories) {
+      setErrors(prev => {
+        const newErrors = { ...prev };
+        delete newErrors.categories;
+        return newErrors;
+      });
+    }
+  };
+
 
   // Handle form submission
   const handleSubmit = async (e: React.FormEvent) => {
@@ -545,7 +597,11 @@ const coverFileInputRef = useRef<HTMLInputElement>(null);
                 </div>
                 
                 <div className=" space-y-4 p-4 border border-zinc-800 rounded-lg bg-zinc-900/30">
-  <Label>Cover Image (optional)</Label>
+  <Label>Cover Image <span className="text-red-500">*</span></Label>
+
+  {errors['coverImage'] && (
+    <p className="text-red-500 text-sm -mt-2">{errors['coverImage']}</p>
+  )}
 
   <div className="flex items-center gap-2 justify-between">
   <div className="flex flex-col gap-2 w-[50%]">
@@ -601,6 +657,7 @@ const coverFileInputRef = useRef<HTMLInputElement>(null);
 )}
     <p className="text-xs text-zinc-500 mt-2">Preview</p>
     </div>
+    
   </div>
 </div>
                 
@@ -648,7 +705,10 @@ const coverFileInputRef = useRef<HTMLInputElement>(null);
                   
                   <div className="grid grid-cols-1 md:grid-cols-2 gap-4 items-start">
                     <div className="space-y-2">
-                      <Label htmlFor="author.avatar">Profile Picture (optional)</Label>
+                      <Label htmlFor="author.avatar">Profile Picture <span className="text-red-500">*</span></Label>
+                      {errors['author.avatar'] && (
+    <p className="text-red-500 text-sm -mt-2">{errors['author.avatar']}</p>
+  )}
                       <div className="flex flex-col gap-2">
                         <div 
                           className={`relative flex items-center justify-center border-2 border-dashed rounded-lg p-4 transition-all cursor-pointer hover:bg-zinc-800/30 ${errors['author.avatar'] ? 'border-red-500' : 'border-zinc-700'}`}
@@ -723,7 +783,34 @@ const coverFileInputRef = useRef<HTMLInputElement>(null);
                     <p className="text-xs text-zinc-500">Your LinkedIn or personal website URL</p>
                   </div>
                 </div>
-                
+
+               {/* Categories Section */}
+<div className="space-y-2">
+  <Label className="text-sm font-medium">
+    Categories <span className="text-red-500">*</span>
+  </Label>
+  <div className={`grid grid-cols-1 md:grid-cols-2 gap-2 ${errors.categories ? 'border-red-500 border p-2 rounded-md' : ''}`}>
+    {interestOptions.map((category) => (
+      <div key={category} className="flex items-center space-x-2">
+        <Checkbox
+          id={`category-${category}`}
+          checked={formData.categories.includes(category)}
+          onCheckedChange={(checked) => 
+            handleCategoryChange(category, checked === true)
+          }
+        />
+        <Label htmlFor={`category-${category}`} className="text-sm font-normal cursor-pointer">
+          {category}
+        </Label>
+      </div>
+    ))}
+  </div>
+  {errors.categories && (
+    <p className="text-red-500 text-sm mt-1">{errors.categories}</p>
+  )}
+</div>
+
+
                 <div className="space-y-2">
                   <div className="flex items-center gap-2">
                     <Tag className="w-4 h-4 text-zinc-400" />
@@ -769,18 +856,19 @@ const coverFileInputRef = useRef<HTMLInputElement>(null);
                 )}
                 
                 <div className="pt-4">
-                  {/* <Button 
-                    type="submit" 
-                    className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
-                    disabled={isSubmitting}
-                  >
-                    {isSubmitting ? 'Submitting...' : 'Submit Article'}
-                  </Button> */}
+          
+
 
 <Button 
   type="submit" 
   className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 transition-all duration-300"
-  disabled={isSubmitting || isUploading || isCoverImageUploading}
+  disabled={
+    isSubmitting || 
+    isUploading || 
+    isCoverImageUploading || 
+    !formData.coverImage || 
+    !formData.author.avatar
+  }
 >
   {isSubmitting ? 'Submitting...' : 
    isUploading || isCoverImageUploading ? 'Uploading images...' : 'Submit Article'}
