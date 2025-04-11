@@ -74,7 +74,7 @@ const BlogPostCard: React.FC<BlogPostCardProps> = ({
           transition={{ duration: 0.3 }}
         />
         <motion.img
-          src={post.coverImage}
+          src={post.coverImage || "https://i0.wp.com/lifeoutsidethemaze.com/wp-content/plugins/penci-portfolio//images/no-thumbnail.jpg?w=1170&ssl=1"}
           alt={post.title}
           className="w-full h-full object-cover"
           animate={{ scale: isHovered ? 1.05 : 1 }}
