@@ -409,7 +409,7 @@ const VenturesPage = () => {
                 Have a venture to showcase?
               </h2>
               <p className="text-lg text-zinc-300 max-w-2xl mx-auto">
-                Submit your project to be featured in our futuristic ecosystem
+                Submit your project to be featured in our ecosystem
               </p>
               <div className="mt-6 inline-block">
                 <Button 

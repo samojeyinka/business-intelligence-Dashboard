@@ -11,7 +11,7 @@ const sampleVentures = [
     name: 'EcoTech Solutions',
     slug: 'ecotech-solutions',
     description: 'Developing sustainable technology solutions for environmental challenges.',
-    logo: '/images/portfolio/company1.png',
+    // logo:comp1,
     stage: 'MVP',
     sectors: ['Climate Tech', 'AI & Machine Learning'],
     isLookingForCollaborators: true,
@@ -23,7 +23,7 @@ const sampleVentures = [
       {
         id: '101',
         name: 'Alex Johnson',
-        image: '/images/portfolio/company1.png'
+        // image: '/images/portfolio/company1.png'
       },
       {
         id: '102',
@@ -40,7 +40,7 @@ const sampleVentures = [
     name: 'FinFlow',
     slug: 'finflow',
     description: 'Revolutionizing financial services with blockchain technology.',
-    logo: '/images/portfolio/company2.png',
+    // logo: '/images/portfolio/company2.png',
     stage: 'GROWTH',
     sectors: ['FinTech', 'Blockchain'],
     isLookingForCollaborators: false,
@@ -52,7 +52,7 @@ const sampleVentures = [
       {
         id: '201',
         name: 'Michael Rodriguez',
-        image: '/images/portfolio/company2.png'
+        // image: '/images/portfolio/company2.png'
       },
       {
         id: '202',
@@ -69,7 +69,7 @@ const sampleVentures = [
     name: 'HealthAI',
     slug: 'health-ai',
     description: 'AI-powered healthcare diagnostics and personalized treatment plans.',
-    logo: '/images/portfolio/company3.png',
+    // logo: '/images/portfolio/company3.png',
     stage: 'PROTOTYPE',
     sectors: ['Healthcare', 'AI & Machine Learning'],
     isLookingForCollaborators: true,
@@ -81,7 +81,7 @@ const sampleVentures = [
       {
         id: '301',
         name: 'David Kim',
-        image: '/images/portfolio/company3.png'
+        // image: '/images/portfolio/company3.png'
       },
       {
         id: '302',
