@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useRouter } from 'next/router';
 import { motion } from 'framer-motion';
 import { useForm } from 'react-hook-form';
@@ -13,10 +13,14 @@ import { RadioGroup, RadioGroupItem } from '@/components/ui/radio-group';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Separator } from '@/components/ui/separator';
-import { ArrowLeft, Upload, Info, AlertTriangle } from 'lucide-react';
+import { ArrowLeft, Upload, Info, AlertTriangle, Mail, AlertCircle } from 'lucide-react';
 import { VentureStage } from '@/types/venture';
 import Header from '@/components/Header';
 import InteractiveBackground from '@/components/InteractiveBackground';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/firebase-config';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from '@/components/ui/dialog';
 
 // Form schema using zod
 const formSchema = z.object({
@@ -28,6 +32,7 @@ const formSchema = z.object({
   isLookingForCollaborators: z.boolean().default(false),
   sectors: z.array(z.string()).min(1, { message: 'Select at least one sector' }),
   technologies: z.array(z.string()).optional(),
+  email: z.string().min(2, { message: 'Please enter a valid email address' }).max(1000),
   website: z.string().url({ message: 'Please enter a valid URL' }).optional().or(z.literal('')),
   twitter: z.string().optional(),
   linkedin: z.string().url({ message: 'Please enter a valid LinkedIn URL' }).optional().or(z.literal('')),
@@ -43,6 +48,14 @@ const SubmitVenturePage = () => {
   const router = useRouter();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [logoPreview, setLogoPreview] = useState<string | null>(null);
+  const [logoFile, setLogoFile] = useState<File | null>(null);
+  const [uploadError, setUploadError] = useState<string | null>(null);
+  const [verificationDialogOpen, setVerificationDialogOpen] = useState(false);
+  const [verificationSent, setVerificationSent] = useState(false);
+  const [verificationCode, setVerificationCode] = useState<string[]>(Array(6).fill(''));
+  const [generatedCode, setGeneratedCode] = useState<string>('');
+  const [verificationError, setVerificationError] = useState<string>('');
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Initialize form
   const form = useForm<FormValues>({
@@ -56,6 +69,7 @@ const SubmitVenturePage = () => {
       isLookingForCollaborators: false,
       sectors: [],
       technologies: [],
+      email: '',
       website: '',
       twitter: '',
       linkedin: '',
@@ -68,34 +82,192 @@ const SubmitVenturePage = () => {
   // Handle logo upload
   const handleLogoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      // In a real app, you would upload this to a storage service
-      const reader = new FileReader();
-      reader.onload = () => {
-        setLogoPreview(reader.result as string);
+    if (!file) return;
+
+    // Validate file type
+    const validTypes = ['image/jpeg', 'image/png', 'image/gif', 'image/webp'];
+    if (!validTypes.includes(file.type)) {
+      setUploadError('Please upload a valid image file (jpg, png, gif, webp)');
+      return;
+    }
+
+    // Validate file size (max 5MB)
+    if (file.size > 5 * 1024 * 1024) {
+      setUploadError('Image size should be less than 5MB');
+      return;
+    }
+
+    setLogoFile(file);
+    setUploadError(null);
+
+    // Create preview
+    const reader = new FileReader();
+    reader.onload = () => {
+      setLogoPreview(reader.result as string);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  // Generate a random 6-digit code
+  const generateCode = () => {
+    return Math.floor(100000 + Math.random() * 900000).toString();
+  };
+
+  // Handle verification code input changes
+  const handleVerificationCodeChange = (index: number, value: string) => {
+    if (/^\d$/.test(value) || value === '') {
+      const newCode = [...verificationCode];
+      newCode[index] = value;
+      setVerificationCode(newCode);
+
+      if (value !== '' && index < 5) {
+        const nextInput = document.getElementById(`verification-input-${index + 1}`);
+        if (nextInput) nextInput.focus();
+      }
+    }
+  };
+
+  // Handle backspace to move to previous input
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === 'Backspace' && verificationCode[index] === '' && index > 0) {
+      const prevInput = document.getElementById(`verification-input-${index - 1}`);
+      if (prevInput) prevInput.focus();
+    }
+  };
+
+  const uploadLogo = async (): Promise<string | null> => {
+    if (!logoFile) return null;
+
+    try {
+      // Convert to base64 for API upload
+      const base64Data = await new Promise<string>((resolve) => {
+        const reader = new FileReader();
+        reader.onload = () => resolve(reader.result as string);
+        reader.readAsDataURL(logoFile);
+      });
+
+      const fileName = `venture-logo-${Date.now()}-${logoFile.name.replace(/\s+/g, '-')}`;
+
+      // Upload to our API endpoint
+      const response = await fetch('/api/upload-image', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          fileName,
+          fileData: base64Data
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Upload failed');
+      }
+
+      const { url } = await response.json();
+      return url;
+    } catch (error) {
+      console.error('Upload failed:', error);
+      throw error;
+    }
+  };
+
+  const sendVerificationEmail = async (email: string) => {
+    setIsSubmitting(true);
+
+    try {
+      const code = generateCode();
+
+      // Send verification email via API
+      const response = await fetch('/api/send-verification', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          email: email,
+          code: code
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send verification email');
+      }
+
+      const data = await response.json();
+
+      // Store the generated code
+      setGeneratedCode(code);
+      setVerificationSent(true);
+
+      // For demo purposes, you might want to show the code in development
+      if (process.env.NODE_ENV === 'development') {
+        console.log('Verification code:', code);
+      }
+
+    } catch (error) {
+      console.error('Error sending verification email:', error);
+      setUploadError(error instanceof Error ? error.message : 'Failed to send verification email. Please try again.');
+    } finally {
+      setIsSubmitting(false);
+    }
+  };
+
+  // Handle verification confirmation
+  const handleVerificationConfirm = async () => {
+    const email = form.getValues('email') || ''; // Using website as contact email for demo
+    await sendVerificationEmail(email);
+  };
+
+  // Handle venture submission after verification
+  const handleVerifiedSubmission = async () => {
+    const enteredCode = verificationCode.join('');
+
+    if (enteredCode.length !== 6) {
+      setVerificationError('Please enter the full 6-digit code');
+      return;
+    }
+
+    if (enteredCode !== generatedCode) {
+      setVerificationError('Invalid verification code');
+      return;
+    }
+
+    setIsSubmitting(true);
+
+    try {
+      // Upload logo first
+      let logoUrl = null;
+      if (logoFile) {
+        logoUrl = await uploadLogo();
+      }
+
+      const ventureData = {
+        ...form.getValues(),
+        logo: logoUrl,
+        status: 'pending',
+        verified: true,
+        createdAt: serverTimestamp(),
+        updatedAt: serverTimestamp()
       };
-      reader.readAsDataURL(file);
+
+      // Add to Firestore ventures collection
+      const docRef = await addDoc(collection(db, "ventures"), ventureData);
+      console.log("Venture submitted with ID: ", docRef.id);
+
+      router.push('/ventures/submit/success');
+    } catch (error) {
+      console.error('Error submitting venture:', error);
+      setUploadError('Failed to submit venture. Please try again.');
+    } finally {
+      setIsSubmitting(false);
     }
   };
 
   // Handle form submission
   const onSubmit = async (data: FormValues) => {
-    setIsSubmitting(true);
-    
-    try {
-      // In a real app, you would send this data to your API
-      console.log('Submitting venture:', data);
-      
-      // Simulate API call
-      await new Promise(resolve => setTimeout(resolve, 1500));
-      
-      // Redirect to success page or ventures list
-      router.push('/ventures/submit/success');
-    } catch (error) {
-      console.error('Error submitting venture:', error);
-    } finally {
-      setIsSubmitting(false);
-    }
+    // Open verification dialog
+    setVerificationDialogOpen(true);
   };
 
   // Available sectors
@@ -131,11 +303,11 @@ const SubmitVenturePage = () => {
     <div className="min-h-screen bg-black text-white">
       <InteractiveBackground />
       <Header />
-      
+
       <main className="container mx-auto px-4 py-16">
         <div className="relative z-10 max-w-4xl mx-auto">
-          <Button 
-            variant="ghost" 
+          <Button
+            variant="ghost"
             className="mb-6 text-zinc-400 hover:text-white"
             onClick={() => router.push('/ventures')}
           >
@@ -152,17 +324,17 @@ const SubmitVenturePage = () => {
               <div className="p-6 border-b border-zinc-800">
                 <h1 className="text-2xl font-bold text-white">Submit Your Venture</h1>
                 <p className="mt-2 text-zinc-400">
-                  Showcase your venture to the Coact community and connect with potential collaborators, investors, and users.
+                  Showcase your venture to the community and connect with potential collaborators, investors, and users.
                 </p>
               </div>
-              
+
               <div className="p-6">
                 <Form {...form}>
                   <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-8">
                     {/* Basic Information */}
                     <div className="space-y-4">
                       <h2 className="text-xl font-semibold text-white">Basic Information</h2>
-                      
+
                       <FormField
                         control={form.control}
                         name="name"
@@ -170,17 +342,17 @@ const SubmitVenturePage = () => {
                           <FormItem>
                             <FormLabel>Venture Name</FormLabel>
                             <FormControl>
-                              <Input 
-                                placeholder="Enter your venture name" 
+                              <Input
+                                placeholder="Enter your venture name"
                                 className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
-                                {...field} 
+                                {...field}
                               />
                             </FormControl>
                             <FormMessage />
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="description"
@@ -188,10 +360,10 @@ const SubmitVenturePage = () => {
                           <FormItem>
                             <FormLabel>Short Description</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                placeholder="Briefly describe your venture (max 300 characters)" 
+                              <Textarea
+                                placeholder="Briefly describe your venture (max 300 characters)"
                                 className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
-                                {...field} 
+                                {...field}
                               />
                             </FormControl>
                             <FormDescription>
@@ -201,7 +373,7 @@ const SubmitVenturePage = () => {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="longDescription"
@@ -209,10 +381,10 @@ const SubmitVenturePage = () => {
                           <FormItem>
                             <FormLabel>Detailed Description</FormLabel>
                             <FormControl>
-                              <Textarea 
-                                placeholder="Provide a comprehensive description of your venture" 
+                              <Textarea
+                                placeholder="Provide a comprehensive description of your venture"
                                 className="min-h-32 bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
-                                {...field} 
+                                {...field}
                               />
                             </FormControl>
                             <FormDescription>
@@ -222,7 +394,7 @@ const SubmitVenturePage = () => {
                           </FormItem>
                         )}
                       />
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -230,8 +402,8 @@ const SubmitVenturePage = () => {
                           render={({ field }) => (
                             <FormItem>
                               <FormLabel>Venture Stage</FormLabel>
-                              <Select 
-                                onValueChange={field.onChange} 
+                              <Select
+                                onValueChange={field.onChange}
                                 defaultValue={field.value}
                               >
                                 <FormControl>
@@ -251,7 +423,7 @@ const SubmitVenturePage = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={form.control}
                           name="teamSize"
@@ -259,8 +431,8 @@ const SubmitVenturePage = () => {
                             <FormItem>
                               <FormLabel>Team Size</FormLabel>
                               <FormControl>
-                                <Input 
-                                  type="number" 
+                                <Input
+                                  type="number"
                                   min="1"
                                   className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
                                   {...field}
@@ -272,7 +444,7 @@ const SubmitVenturePage = () => {
                           )}
                         />
                       </div>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <FormField
                           control={form.control}
@@ -296,7 +468,7 @@ const SubmitVenturePage = () => {
                             </FormItem>
                           )}
                         />
-                        
+
                         <FormField
                           control={form.control}
                           name="isLookingForCollaborators"
@@ -321,13 +493,13 @@ const SubmitVenturePage = () => {
                         />
                       </div>
                     </div>
-                    
+
                     <Separator className="bg-zinc-800" />
-                    
+
                     {/* Categories and Technologies */}
                     <div className="space-y-4">
                       <h2 className="text-xl font-semibold text-white">Categories & Technologies</h2>
-                      
+
                       <FormField
                         control={form.control}
                         name="sectors"
@@ -364,7 +536,7 @@ const SubmitVenturePage = () => {
                           </FormItem>
                         )}
                       />
-                      
+
                       <FormField
                         control={form.control}
                         name="technologies"
@@ -402,14 +574,34 @@ const SubmitVenturePage = () => {
                         )}
                       />
                     </div>
-                    
+
                     <Separator className="bg-zinc-800" />
-                    
+
                     {/* Links and Media */}
                     <div className="space-y-4">
                       <h2 className="text-xl font-semibold text-white">Links & Media</h2>
-                      
+
                       <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                        <FormField
+                          control={form.control}
+                          name="email"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>Email</FormLabel>
+                              <FormControl>
+                                <Input
+                                  type='email'
+                                  placeholder="Your email address"
+                                  className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+
                         <FormField
                           control={form.control}
                           name="website"
@@ -417,17 +609,23 @@ const SubmitVenturePage = () => {
                             <FormItem>
                               <FormLabel>Website</FormLabel>
                               <FormControl>
-                                <Input 
-                                  placeholder="https://yourventure.com" 
+                                <Input
+                                  placeholder="https://yourventure.com"
                                   className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
-                                  {...field} 
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />
                             </FormItem>
                           )}
                         />
-                        
+
+
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+
+
                         <FormField
                           control={form.control}
                           name="twitter"
@@ -435,10 +633,28 @@ const SubmitVenturePage = () => {
                             <FormItem>
                               <FormLabel>Twitter/X Handle</FormLabel>
                               <FormControl>
-                                <Input 
-                                  placeholder="@yourventure" 
+                                <Input
+                                  placeholder="@yourventure"
                                   className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
-                                  {...field} 
+                                  {...field}
+                                />
+                              </FormControl>
+                              <FormMessage />
+                            </FormItem>
+                          )}
+                        />
+
+                        <FormField
+                          control={form.control}
+                          name="linkedin"
+                          render={({ field }) => (
+                            <FormItem>
+                              <FormLabel>LinkedIn</FormLabel>
+                              <FormControl>
+                                <Input
+                                  placeholder="https://linkedin.com/company/yourventure"
+                                  className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
+                                  {...field}
                                 />
                               </FormControl>
                               <FormMessage />
@@ -446,25 +662,9 @@ const SubmitVenturePage = () => {
                           )}
                         />
                       </div>
-                      
-                      <FormField
-                        control={form.control}
-                        name="linkedin"
-                        render={({ field }) => (
-                          <FormItem>
-                            <FormLabel>LinkedIn</FormLabel>
-                            <FormControl>
-                              <Input 
-                                placeholder="https://linkedin.com/company/yourventure" 
-                                className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
-                                {...field} 
-                              />
-                            </FormControl>
-                            <FormMessage />
-                          </FormItem>
-                        )}
-                      />
-                      
+
+
+
                       <FormField
                         control={form.control}
                         name="foundedDate"
@@ -472,10 +672,10 @@ const SubmitVenturePage = () => {
                           <FormItem>
                             <FormLabel>Founded Date (MM/YYYY)</FormLabel>
                             <FormControl>
-                              <Input 
-                                type="month" 
+                              <Input
+                                type="month"
                                 className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
-                                {...field} 
+                                {...field}
                               />
                             </FormControl>
                             <FormDescription>
@@ -485,15 +685,15 @@ const SubmitVenturePage = () => {
                           </FormItem>
                         )}
                       />
-                      
+
                       <div className="space-y-2">
                         <FormLabel>Logo</FormLabel>
                         <div className="flex items-center space-x-4">
                           {logoPreview ? (
                             <div className="relative h-20 w-20 overflow-hidden rounded-md bg-zinc-800">
-                              <img 
-                                src={logoPreview} 
-                                alt="Logo preview" 
+                              <img
+                                src={logoPreview}
+                                alt="Logo preview"
                                 className="h-full w-full object-cover"
                               />
                             </div>
@@ -508,17 +708,21 @@ const SubmitVenturePage = () => {
                               accept="image/*"
                               className="bg-zinc-800/50 border-zinc-700 focus:border-purple-500"
                               onChange={handleLogoChange}
+                              ref={fileInputRef}
                             />
                             <p className="mt-1 text-xs text-zinc-500">
                               Recommended: Square image, at least 200x200px
                             </p>
+                            {uploadError && (
+                              <p className="text-red-500 text-sm mt-1">{uploadError}</p>
+                            )}
                           </div>
                         </div>
                       </div>
                     </div>
-                    
+
                     <Separator className="bg-zinc-800" />
-                    
+
                     {/* Terms and Submission */}
                     <div className="space-y-4">
                       <div className="rounded-md border border-amber-500/20 bg-amber-950/20 p-4">
@@ -532,7 +736,7 @@ const SubmitVenturePage = () => {
                           </div>
                         </div>
                       </div>
-                      
+
                       <FormField
                         control={form.control}
                         name="termsAccepted"
@@ -556,10 +760,10 @@ const SubmitVenturePage = () => {
                           </FormItem>
                         )}
                       />
-                      
+
                       <div className="flex justify-end">
-                        <Button 
-                          type="submit" 
+                        <Button
+                          type="submit"
                           className="bg-purple-600 hover:bg-purple-700"
                           disabled={isSubmitting}
                         >
@@ -574,6 +778,102 @@ const SubmitVenturePage = () => {
           </motion.div>
         </div>
       </main>
+
+      {/* Email Verification Dialog */}
+      <Dialog open={verificationDialogOpen} onOpenChange={setVerificationDialogOpen}>
+        <DialogContent className="bg-zinc-900 border border-zinc-800 text-white">
+          <DialogHeader>
+            <DialogTitle>Verify Your Email</DialogTitle>
+            <DialogDescription className="text-zinc-400">
+              We need to verify your email before publishing your venture.
+            </DialogDescription>
+          </DialogHeader>
+
+          {!verificationSent ? (
+            <>
+              <div className="py-4">
+                <p className="mb-4">We'll send a verification code to:</p>
+                <div className="p-3 bg-zinc-800 rounded-md flex items-center gap-2">
+                  <Mail className="w-4 h-4 text-purple-400" />
+                  <span>{form.getValues('email')}</span>
+                </div>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => setVerificationDialogOpen(false)}
+                >
+                  Cancel
+                </Button>
+                <Button
+                  onClick={handleVerificationConfirm}
+                  disabled={isSubmitting}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  {isSubmitting ? 'Sending...' : 'Send Verification Code'}
+                </Button>
+              </DialogFooter>
+            </>
+          ) : (
+            <>
+              <div className="py-4 space-y-4">
+                <Alert className="bg-green-900/20 border-green-900/30 text-green-300">
+                  <AlertCircle className="h-4 w-4" />
+                  <AlertDescription>
+                    Verification email sent successfully!
+                  </AlertDescription>
+                </Alert>
+
+                <p className="text-zinc-300">Please check your email and enter the 6-digit verification code below:</p>
+
+                {/* 6-digit verification code input */}
+                <div className="flex justify-center gap-2 my-4">
+                  {Array.from({ length: 6 }).map((_, index) => (
+                    <Input
+                      key={index}
+                      id={`verification-input-${index}`}
+                      type="text"
+                      maxLength={1}
+                      value={verificationCode[index]}
+                      onChange={(e) => handleVerificationCodeChange(index, e.target.value)}
+                      onKeyDown={(e) => handleKeyDown(index, e)}
+                      className="w-12 h-12 text-center text-xl bg-zinc-800 border-zinc-700 focus:border-purple-500"
+                      autoFocus={index === 0}
+                    />
+                  ))}
+                </div>
+
+                {verificationError && (
+                  <p className="text-red-500 text-sm text-center">{verificationError}</p>
+                )}
+
+                <Button
+                  onClick={handleVerifiedSubmission}
+                  disabled={isSubmitting}
+                  className="w-full bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700"
+                >
+                  {isSubmitting ? 'Verifying...' : 'Verify and Publish Venture'}
+                </Button>
+              </div>
+
+              <DialogFooter>
+                <Button
+                  variant="outline"
+                  onClick={() => {
+                    setVerificationDialogOpen(false);
+                    setVerificationSent(false);
+                    setVerificationCode(Array(6).fill(''));
+                    setVerificationError('');
+                  }}
+                >
+                  Close
+                </Button>
+              </DialogFooter>
+            </>
+          )}
+        </DialogContent>
+      </Dialog>
     </div>
   );
 };
