@@ -1,21 +1,53 @@
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { motion } from 'framer-motion';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
+import { db } from '@/firebase-config';
 
 const CtaSection: React.FC = () => {
   const [email, setEmail] = useState('');
   const [isHovered, setIsHovered] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState('');
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (email) {
+    
+    if (!email) {
+      setError('Please enter a valid email address');
+      return;
+    }
+  
+    setIsLoading(true);
+    setError('');
+  
+    try {
+      await addDoc(collection(db, "subscriptions"), {
+        email,
+        createdAt: serverTimestamp(),
+        source: "CTA Section",
+        status: "active"
+      });
       setIsSubmitted(true);
       setEmail('');
-      // In a real app, you would send this to your API
+    } catch (err) {
+      setError('Failed to subscribe. Please try again.');
+      console.error("Error saving subscription:", err);
+    } finally {
+      setIsLoading(false);
     }
   };
+
+  useEffect(() => {
+    if (isSubmitted) {
+      const timer = setTimeout(() => {
+        setIsSubmitted(false);
+      }, 5000);
+      return () => clearTimeout(timer);
+    }
+  }, [isSubmitted]);
 
   return (
     <motion.div 
@@ -87,12 +119,13 @@ const CtaSection: React.FC = () => {
                   onChange={(e) => setEmail(e.target.value)}
                   required
                 />
-                <Button 
-                  type="submit"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8"
-                >
-                  Join Our Network
-                </Button>
+              <Button 
+  type="submit"
+  className="bg-gradient-to-r from-blue-600 to-purple-600 hover:from-blue-700 hover:to-purple-700 text-white px-8"
+  disabled={isLoading}
+>
+  {isLoading ? 'Subscribing...' : 'Join Our Network'}
+</Button>
               </>
             ) : (
               <motion.div 
@@ -104,6 +137,16 @@ const CtaSection: React.FC = () => {
               </motion.div>
             )}
           </motion.form>
+
+          {error && (
+  <motion.div 
+    className="text-center text-sm text-red-400 mt-2"
+    initial={{ opacity: 0 }}
+    animate={{ opacity: 1 }}
+  >
+    {error}
+  </motion.div>
+)}
           
           <motion.div 
             className="mt-8 text-center text-sm text-slate-400"
