@@ -2,6 +2,7 @@
 import { useEffect } from 'react';
 import { Moon, Sun } from 'lucide-react';
 import { useThemeStore } from '@/lib/stores/themeStore';
+import PdfToolsDropdown from './PdfToolsDropdown';
 
 export default function Header() {
     const { darkMode, toggleDarkMode } = useThemeStore();
@@ -30,12 +31,7 @@ export default function Header() {
                   </span>
                 </div>
                 <div className="flex items-center space-x-4">
-                  <a
-                    href="#features"
-                    className="hidden md:block hover:text-blue-600 transition-colors"
-                  >
-                    Features
-                  </a>
+                <PdfToolsDropdown /> 
                   <a
                     href="#pricing"
                     className="hidden md:block hover:text-blue-600 transition-colors"
