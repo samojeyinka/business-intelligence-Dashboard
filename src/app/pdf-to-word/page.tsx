@@ -6,9 +6,13 @@ import { saveAs } from 'file-saver';
 import { Upload, FileText, Download, Loader2, Send, ChevronRight, Mail, Phone, Pen } from 'lucide-react';
 import Head from 'next/head';
 import Header from '@/components/globals/Header';
-import { useThemeStore } from '@/lib/stores/themeStore';
 import { BiExport } from 'react-icons/bi';
 import ExportButtonGroup from './ExportButtonGroup';
+import { useThemeStore } from '@/lib/stores/themeStore';
+import { CgDrive } from 'react-icons/cg';
+import { DiDropbox, DiGithub, DiGithubAlt, DiGoogleDrive, DiOnedrive } from 'react-icons/di';
+import { SiGoogledocs, SiMega } from 'react-icons/si';
+import { PiFileCloudFill } from 'react-icons/pi';
 
 export default function PdfToWordConverter() {
   const { darkMode } = useThemeStore();
@@ -26,6 +30,14 @@ export default function PdfToWordConverter() {
   const [convertedDocBuffer, setConvertedDocBuffer] = useState<ArrayBuffer | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const dropAreaRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (darkMode) {
+      document.body.classList.add("dark");
+    } else {
+      document.body.classList.remove("dark");
+    }
+  }, [darkMode]);
 
 
   useEffect(() => {
@@ -306,26 +318,28 @@ export default function PdfToWordConverter() {
       </Head>
       <Header/>
 
-      <div className="min-h-screen bg-gray-50 dark:bg-gray-900 transition-colors duration-300">
+      <div className={`min-h-screen  transition-colors duration-300 ${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 tetx-gray-900"}`}>
         <main className="container mx-auto px-4 py-12">
           <div className="max-w-4xl mx-auto text-center mb-12">
-            <h2 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">
+            <h2 className={`text-3xl md:text-4xl font-bold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>
               Convert PDF to Editable Word Documents
             </h2>
-            <p className="text-xl text-gray-600 dark:text-gray-300">
+            <p className={`text-xl  ${darkMode ? "text-gray-200" : "text-gray-900"}`}>
               Extract text from PDFs while preserving formatting - 100% free and secure
             </p>
           </div>
 
           {/* Upload Area */}
+
+          <div className="flex flex-col md:flex-row items-center gap-4 max-w-3xl mx-auto">
           <div
             ref={dropAreaRef}
-            className={`max-w-3xl mx-auto border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
+            className={`${darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"} w-full border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
               isDragging
                 ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
                 : isConverting
-                ? 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 opacity-75'
-                : 'border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800'
+                ? 'opacity-75'
+                : ''
             }`}
             onDragEnter={handleDragEnter}
             onDragLeave={handleDragLeave}
@@ -335,14 +349,14 @@ export default function PdfToWordConverter() {
             {isConverting ? (
               // Converting Spinner
               <div className="flex flex-col items-center justify-center space-y-6">
-                <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                <div className={`p-4 ${darkMode ? "bg-blue-900/30" :  "bg-blue-100"} rounded-full`}>
                   <Loader2 className="w-10 h-10 text-blue-600 dark:text-blue-400 animate-spin" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  <h3 className={`text-lg font-medium  mb-2 ${darkMode ? "text-white":"text-gray-900"}`}>
                     Converting your PDF
                   </h3>
-                  <p className="text-gray-500 dark:text-gray-400">
+                  <p className={`${darkMode ? "text-gray-400" : "text-gray-500"}`}>
                     This will just take a moment...
                   </p>
                 </div>
@@ -352,15 +366,17 @@ export default function PdfToWordConverter() {
               </div>
             ) : (
               // Normal Upload UI
+
+          
               <div className="flex flex-col items-center justify-center space-y-6">
-                <div className="p-4 bg-blue-100 dark:bg-blue-900/30 rounded-full">
+                <div className={`p-4  rounded-full ${darkMode ? "bg-gray-700":"bg-blue-100"}`}>
                   <Upload className="w-10 h-10 text-blue-600 dark:text-blue-400" />
                 </div>
                 <div>
-                  <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
+                  <h3 className={`text-lg font-medium mb-2 ${darkMode ? "text-white":"text-gray-900"}`}>
                     {pdfFile ? fileName : 'Drag & drop your PDF here'}
                   </h3>
-                  <p className="text-gray-500 dark:text-gray-400">
+                  <p className={`${darkMode ? "text-gray-300":"text-gray-500"}`}>
                     {pdfFile ? 'Ready to convert' : 'or click to browse files'}
                   </p>
                 </div>
@@ -380,7 +396,32 @@ export default function PdfToWordConverter() {
                   {pdfFile ? 'Change File' : 'Select PDF'}
                 </button>
               </div>
+             
             )}
+          </div>
+            <div className="flex flex-col gap-4">
+            
+              <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800":"bg-blue-100"}`}>
+                <DiGoogleDrive className="w-7 h-7 text-[#0F9D58]" />
+                </div>
+
+                <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800":"bg-blue-100"}`}>
+                <DiDropbox className="w-7 h-7 text-[#0061FF ]" />
+                </div>
+
+                <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800":"bg-blue-100"}`}>
+                <SiMega className="w-7 h-7 text-[#D9272E] bg-white rounded-full" />
+                </div>
+
+                <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800":"bg-blue-100"}`}>
+                <DiOnedrive className={`w-7 h-7 ${darkMode ? "text-white" :"text-[#094AB2]"}`} />
+                </div>
+
+                <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800":"bg-blue-100"}`}>
+                <SiGoogledocs className={`w-7 h-7 ${darkMode ? "text-[#1A73E8] " :"text-[#1A73E8 ]"}`} />
+                </div>
+
+            </div>
           </div>
 
           {error && (
@@ -393,7 +434,7 @@ export default function PdfToWordConverter() {
             <div className="max-w-3xl mx-auto mt-8">
               <div className="flex flex-col sm:flex-row justify-between items-center gap-4">
                 <div className="flex items-center gap-3">
-                  <FileText className="text-blue-600 dark:text-blue-400" />
+                  <FileText className={`${darkMode ? "text-blue-400" : "text-blue-600"}`} />
                   <div>
                     <p className="font-medium text-gray-900 dark:text-white">{fileName}</p>
                     <p className="text-sm text-gray-500 dark:text-gray-400">
@@ -403,11 +444,11 @@ export default function PdfToWordConverter() {
                 </div>
               </div>
 
-              <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg shadow p-6">
-                <h3 className="font-medium text-gray-900 dark:text-white mb-3">
+              <div className={`mt-6 rounded-lg shadow p-6 ${darkMode ? "bg-gray-700" : "bg-whit"}`}>
+                <h3 className={`font-medium mb-3 ${darkMode ? "text-white" : "text-gray-900"}`}>
                   First Page Preview
                 </h3>
-                <div className="text-gray-700 dark:text-gray-300 bg-gray-50 dark:bg-gray-700/50 p-4 rounded max-h-60 overflow-y-auto">
+                <div className={`${darkMode ? "text-gray-200 bg-gray-600" : "text-gray-700 bg-gray-100"} p-4 rounded max-h-60 overflow-y-auto`}>
                   {previewText}
                 </div>
               </div>
@@ -415,52 +456,52 @@ export default function PdfToWordConverter() {
           )}
 
           <div className="max-w-3xl mx-auto mt-16 grid md:grid-cols-2 gap-8">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className={`rounded-xl shadow p-6  ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <h3 className={`text-xl font-bold  mb-4  ${darkMode ? "text-white" : "text-gray-900"}`}>
                 Why Convert PDF to Word?
               </h3>
               <ul className="space-y-3 text-gray-600 dark:text-gray-300">
                 <li className="flex items-start gap-2">
                   <span className="text-blue-600 dark:text-blue-400">✓</span>
-                  <span>Edit text in Microsoft Word or Google Docs</span>
+                  <span className={`${darkMode ? "text-gray-200" : "text-gray-900"}`}>Edit text in Microsoft Word or Google Docs</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-600 dark:text-blue-400">✓</span>
-                  <span>Reuse content from PDFs in new documents</span>
+                  <span className={`${darkMode ? "text-gray-200" : "text-gray-900"}`}>Reuse content from PDFs in new documents</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-600 dark:text-blue-400">✓</span>
-                  <span>Update old documents without retyping</span>
+                  <span className={`${darkMode ? "text-gray-200" : "text-gray-900"}`}>Update old documents without retyping</span>
                 </li>
                 <li className="flex items-start gap-2">
                   <span className="text-blue-600 dark:text-blue-400">✓</span>
-                  <span>Extract text from scanned PDFs (OCR)</span>
+                  <span className={`${darkMode ? "text-gray-200" : "text-gray-900"}`}>Extract text from scanned PDFs (OCR)</span>
                 </li>
               </ul>
             </div>
 
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6">
-              <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-4">
+            <div className={`rounded-xl shadow p-6 ${darkMode ? "bg-gray-800" : "bg-white"}`}>
+              <h3 className={`text-xl font-bold mb-4 ${darkMode ? "text-white" : "text-gray-900"}`}>
                 How It Works
               </h3>
               <ol className="space-y-4 text-gray-600 dark:text-gray-300">
                 <li className="flex gap-3">
-                  <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium text-sm">
+                <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full ${darkMode ? "bg-gray-700":"bg-blue-100"} text-blue-600 dark:text-blue-400 font-medium text-sm`}>
                     1
                   </span>
-                  <span>Upload your PDF file (max 50MB)</span>
+                  <span className={`${darkMode ? "text-gray-200" : "text-gray-900"}`}>Upload your PDF file (max 50MB)</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium text-sm">
+                <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full ${darkMode ? "bg-gray-700":"bg-blue-100"} text-blue-600 dark:text-blue-400 font-medium text-sm`}>
                     2
                   </span>
-                  <span>Our tool instantly converts your document</span>
+                  <span className={`${darkMode ? "text-gray-200" : "text-gray-900"}`}>Our tool instantly converts your document</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className="flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-medium text-sm">
+                  <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full ${darkMode ? "bg-gray-700":"bg-blue-100"} text-blue-600 dark:text-blue-400 font-medium text-sm`}>
                     3
                   </span>
-                  <span>Choose your preferred delivery method</span>
+                  <span className={`${darkMode ? "text-gray-200" : "text-gray-900"}`}>Choose your preferred delivery method</span>
                 </li>
               </ol>
             </div>

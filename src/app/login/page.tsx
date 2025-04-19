@@ -5,6 +5,7 @@ import { useThemeStore } from '@/lib/stores/themeStore';
 import { Apple, Github, Mail, Facebook } from 'lucide-react';
 import Link from 'next/link';
 import Head from 'next/head';
+import Header from '@/components/globals/Header';
 
 export default function LoginPage() {
   const { darkMode } = useThemeStore();
@@ -66,6 +67,7 @@ export default function LoginPage() {
           })}
         </script>
       </Head>
+      <Header/>
     <div className={`flex min-h-screen items-center justify-center ${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 text-gray-900"
       }`}>
 
