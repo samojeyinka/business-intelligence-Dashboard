@@ -23,11 +23,13 @@
     "next": "14.2.6",
     "react": "^18",
     "react-dom": "^18",
+    "react-icons": "^5.5.0",
     "tailwind-merge": "^3.2.0",
     "tailwindcss-animate": "^1.0.7",
     "zustand": "^5.0.3"
   },
   "devDependencies": {
+    "@types/file-saver": "^2.0.7",
     "@types/formidable": "^3.4.5",
     "@types/lodash.throttle": "^4.1.9",
     "@types/node": "^20",
