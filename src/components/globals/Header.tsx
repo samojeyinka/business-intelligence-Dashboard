@@ -6,6 +6,7 @@ import { useThemeStore } from '@/lib/stores/themeStore';
 import PdfToolsDropdown from './PdfToolsDropdown';
 import { logo } from '../../../public/assets/assets';
 import Image from 'next/image';
+import Link from 'next/link';
 
 export default function Header() {
   const { darkMode, toggleDarkMode } = useThemeStore();
@@ -38,12 +39,12 @@ export default function Header() {
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex justify-between h-16">
           {/* Logo section */}
-          <div className="flex items-center">
+          <Link href={"/"} className="flex items-center">
             <Image src={logo} alt='Noteppaper AI' className='w-[44px] transition-transform duration-300 hover:scale-105' />
             <span className="text-2xl font-semibold bg-gradient-to-r from-purple-500 to-blue-600 text-transparent bg-clip-text ml-2">
               NotepaperAI
             </span>
-          </div>
+          </Link>
           
           {/* Desktop menu */}
           <div className={`hidden md:flex items-center space-x-4 ${darkMode ? "text-white" : "text-black"}`}>

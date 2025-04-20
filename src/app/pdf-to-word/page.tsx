@@ -13,6 +13,7 @@ import { CgDrive } from 'react-icons/cg';
 import { DiDropbox, DiGithub, DiGithubAlt, DiGoogleDrive, DiOnedrive } from 'react-icons/di';
 import { SiGoogledocs, SiMega } from 'react-icons/si';
 import { PiFileCloudFill } from 'react-icons/pi';
+import Footer from '@/components/globals/Footer';
 
 export default function PdfToWordConverter() {
   const { darkMode } = useThemeStore();
@@ -48,7 +49,7 @@ export default function PdfToWordConverter() {
           script.src = 'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.min.js';
           script.async = true;
           script.onload = () => {
-            window.pdfjsLib.GlobalWorkerOptions.workerSrc = 
+            window.pdfjsLib.GlobalWorkerOptions.workerSrc =
               'https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.4.120/pdf.worker.min.js';
           };
           document.head.appendChild(script);
@@ -106,10 +107,10 @@ export default function PdfToWordConverter() {
   };
 
   const handleFileSelect = async (file: File) => {
- 
+
     setConvertedDocBuffer(null);
     setError(null);
-    
+
     if (!isPdfFile(file)) {
       setError('Please select a valid PDF document.');
       setPdfFile(null);
@@ -253,10 +254,10 @@ export default function PdfToWordConverter() {
       });
 
       const buffer = await Packer.toBuffer(doc);
-      
-   
+
+
       setConvertedDocBuffer(buffer);
-      
+
 
       setShowDeliveryModal(true);
     } catch (err) {
@@ -271,7 +272,7 @@ export default function PdfToWordConverter() {
     if (convertedDocBuffer) {
       saveAs(new Blob([convertedDocBuffer]), fileName.replace('.pdf', '.docx'));
       setDeliverySuccess(true);
-      
+
       setTimeout(() => {
         setDeliverySuccess(false);
         setShowDeliveryModal(false);
@@ -284,7 +285,7 @@ export default function PdfToWordConverter() {
     // Here you would typically send the email to your backend
     console.log('Email delivery requested:', email);
     setDeliverySuccess(true);
-    
+
     setTimeout(() => {
       setDeliverySuccess(false);
       setShowDeliveryModal(false);
@@ -297,7 +298,7 @@ export default function PdfToWordConverter() {
     // Here you would handle WhatsApp delivery
     console.log('WhatsApp delivery requested:', whatsappNumber);
     setDeliverySuccess(true);
-    
+
     setTimeout(() => {
       setDeliverySuccess(false);
       setShowDeliveryModal(false);
@@ -316,7 +317,7 @@ export default function PdfToWordConverter() {
         <meta property="og:type" content="website" />
         <link rel="canonical" href="https://yourdomain.com/pdf-to-word" />
       </Head>
-      <Header/>
+      <Header />
 
       <div className={`min-h-screen  transition-colors duration-300 ${darkMode ? "bg-gray-900 text-white" : "bg-gray-50 tetx-gray-900"}`}>
         <main className="container mx-auto px-4 py-12">
@@ -332,94 +333,93 @@ export default function PdfToWordConverter() {
           {/* Upload Area */}
 
           <div className="flex flex-col md:flex-row items-center gap-4 max-w-3xl mx-auto">
-          <div
-            ref={dropAreaRef}
-            className={`${darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"} w-full border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${
-              isDragging
-                ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
-                : isConverting
-                ? 'opacity-75'
-                : ''
-            }`}
-            onDragEnter={handleDragEnter}
-            onDragLeave={handleDragLeave}
-            onDragOver={handleDragOver}
-            onDrop={handleDrop}
-          >
-            {isConverting ? (
-              // Converting Spinner
-              <div className="flex flex-col items-center justify-center space-y-6">
-                <div className={`p-4 ${darkMode ? "bg-blue-900/30" :  "bg-blue-100"} rounded-full`}>
-                  <Loader2 className="w-10 h-10 text-blue-600 dark:text-blue-400 animate-spin" />
+            <div
+              ref={dropAreaRef}
+              className={`${darkMode ? "bg-gray-800 border-gray-600" : "bg-white border-gray-300"} w-full border-2 border-dashed rounded-xl p-12 text-center transition-all duration-300 ${isDragging
+                  ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20'
+                  : isConverting
+                    ? 'opacity-75'
+                    : ''
+                }`}
+              onDragEnter={handleDragEnter}
+              onDragLeave={handleDragLeave}
+              onDragOver={handleDragOver}
+              onDrop={handleDrop}
+            >
+              {isConverting ? (
+                // Converting Spinner
+                <div className="flex flex-col items-center justify-center space-y-6">
+                  <div className={`p-4 ${darkMode ? "bg-blue-900/30" : "bg-blue-100"} rounded-full`}>
+                    <Loader2 className="w-10 h-10 text-blue-600 dark:text-blue-400 animate-spin" />
+                  </div>
+                  <div>
+                    <h3 className={`text-lg font-medium  mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>
+                      Converting your PDF
+                    </h3>
+                    <p className={`${darkMode ? "text-gray-400" : "text-gray-500"}`}>
+                      This will just take a moment...
+                    </p>
+                  </div>
+                  <div className="w-full max-w-xs bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2">
+                    <div className="bg-blue-600 dark:bg-blue-500 h-2.5 rounded-full animate-pulse w-full"></div>
+                  </div>
                 </div>
-                <div>
-                  <h3 className={`text-lg font-medium  mb-2 ${darkMode ? "text-white":"text-gray-900"}`}>
-                    Converting your PDF
-                  </h3>
-                  <p className={`${darkMode ? "text-gray-400" : "text-gray-500"}`}>
-                    This will just take a moment...
-                  </p>
-                </div>
-                <div className="w-full max-w-xs bg-gray-200 dark:bg-gray-700 rounded-full h-2.5 mt-2">
-                  <div className="bg-blue-600 dark:bg-blue-500 h-2.5 rounded-full animate-pulse w-full"></div>
-                </div>
-              </div>
-            ) : (
-              // Normal Upload UI
+              ) : (
+                // Normal Upload UI
 
-          
-              <div className="flex flex-col items-center justify-center space-y-6">
-                <div className={`p-4  rounded-full ${darkMode ? "bg-gray-700":"bg-blue-100"}`}>
-                  <Upload className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+
+                <div className="flex flex-col items-center justify-center space-y-6">
+                  <div className={`p-4  rounded-full ${darkMode ? "bg-gray-700" : "bg-blue-100"}`}>
+                    <Upload className="w-10 h-10 text-blue-600 dark:text-blue-400" />
+                  </div>
+                  <div>
+                    <h3 className={`text-lg font-medium mb-2 ${darkMode ? "text-white" : "text-gray-900"}`}>
+                      {pdfFile ? fileName : 'Drag & drop your PDF here'}
+                    </h3>
+                    <p className={`${darkMode ? "text-gray-300" : "text-gray-500"}`}>
+                      {pdfFile ? 'Ready to convert' : 'or click to browse files'}
+                    </p>
+                  </div>
+                  <input
+                    ref={fileInputRef}
+                    type="file"
+                    accept=".pdf"
+                    onChange={handleFileChange}
+                    className="hidden"
+                    disabled={isConverting}
+                  />
+                  <button
+                    onClick={() => fileInputRef.current?.click()}
+                    disabled={isConverting}
+                    className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
+                  >
+                    {pdfFile ? 'Change File' : 'Select PDF'}
+                  </button>
                 </div>
-                <div>
-                  <h3 className={`text-lg font-medium mb-2 ${darkMode ? "text-white":"text-gray-900"}`}>
-                    {pdfFile ? fileName : 'Drag & drop your PDF here'}
-                  </h3>
-                  <p className={`${darkMode ? "text-gray-300":"text-gray-500"}`}>
-                    {pdfFile ? 'Ready to convert' : 'or click to browse files'}
-                  </p>
-                </div>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".pdf"
-                  onChange={handleFileChange}
-                  className="hidden"
-                  disabled={isConverting}
-                />
-                <button
-                  onClick={() => fileInputRef.current?.click()}
-                  disabled={isConverting}
-                  className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors disabled:opacity-70 disabled:cursor-not-allowed"
-                >
-                  {pdfFile ? 'Change File' : 'Select PDF'}
-                </button>
-              </div>
-             
-            )}
-          </div>
-            <div className="flex flex-col gap-4">
-            
-              <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800":"bg-blue-100"}`}>
+
+              )}
+            </div>
+            <div className="flex flex-row md:flex-col gap-4">
+
+              <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800" : "bg-blue-100"}`}>
                 <DiGoogleDrive className="w-7 h-7 text-[#0F9D58]" />
-                </div>
+              </div>
 
-                <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800":"bg-blue-100"}`}>
+              <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800" : "bg-blue-100"}`}>
                 <DiDropbox className="w-7 h-7 text-[#0061FF ]" />
-                </div>
+              </div>
 
-                <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800":"bg-blue-100"}`}>
+              <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800" : "bg-blue-100"}`}>
                 <SiMega className="w-7 h-7 text-[#D9272E] bg-white rounded-full" />
-                </div>
+              </div>
 
-                <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800":"bg-blue-100"}`}>
-                <DiOnedrive className={`w-7 h-7 ${darkMode ? "text-white" :"text-[#094AB2]"}`} />
-                </div>
+              <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800" : "bg-blue-100"}`} title='One drive'>
+                <DiOnedrive className={`w-7 h-7 ${darkMode ? "text-white" : "text-[#094AB2]"}`} />
+              </div>
 
-                <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800":"bg-blue-100"}`}>
-                <SiGoogledocs className={`w-7 h-7 ${darkMode ? "text-[#1A73E8] " :"text-[#1A73E8 ]"}`} />
-                </div>
+              <div className={`p-3 cursor-pointer  rounded-full ${darkMode ? "bg-gray-800" : "bg-blue-100"}`}>
+                <SiGoogledocs className={`w-7 h-7 ${darkMode ? "text-[#1A73E8] " : "text-[#1A73E8 ]"}`} />
+              </div>
 
             </div>
           </div>
@@ -486,19 +486,19 @@ export default function PdfToWordConverter() {
               </h3>
               <ol className="space-y-4 text-gray-600 dark:text-gray-300">
                 <li className="flex gap-3">
-                <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full ${darkMode ? "bg-gray-700":"bg-blue-100"} text-blue-600 dark:text-blue-400 font-medium text-sm`}>
+                  <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full ${darkMode ? "bg-gray-700" : "bg-blue-100"} text-blue-600 dark:text-blue-400 font-medium text-sm`}>
                     1
                   </span>
                   <span className={`${darkMode ? "text-gray-200" : "text-gray-900"}`}>Upload your PDF file (max 50MB)</span>
                 </li>
                 <li className="flex gap-3">
-                <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full ${darkMode ? "bg-gray-700":"bg-blue-100"} text-blue-600 dark:text-blue-400 font-medium text-sm`}>
+                  <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full ${darkMode ? "bg-gray-700" : "bg-blue-100"} text-blue-600 dark:text-blue-400 font-medium text-sm`}>
                     2
                   </span>
                   <span className={`${darkMode ? "text-gray-200" : "text-gray-900"}`}>Our tool instantly converts your document</span>
                 </li>
                 <li className="flex gap-3">
-                  <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full ${darkMode ? "bg-gray-700":"bg-blue-100"} text-blue-600 dark:text-blue-400 font-medium text-sm`}>
+                  <span className={`flex-shrink-0 flex items-center justify-center w-6 h-6 rounded-full ${darkMode ? "bg-gray-700" : "bg-blue-100"} text-blue-600 dark:text-blue-400 font-medium text-sm`}>
                     3
                   </span>
                   <span className={`${darkMode ? "text-gray-200" : "text-gray-900"}`}>Choose your preferred delivery method</span>
@@ -507,7 +507,7 @@ export default function PdfToWordConverter() {
             </div>
           </div>
 
-          <div className="max-w-3xl mx-auto mt-16 bg-gradient-to-r from-blue-600 to-blue-500 dark:from-blue-700 dark:to-blue-600 rounded-xl shadow-lg overflow-hidden">
+          <div className="max-w-3xl mx-auto mt-16 bg-gradient-to-r from-blue-600 to-purple-500 dark:from-blue-700 dark:to-blue-600 rounded-xl shadow-lg overflow-hidden">
             <div className="p-8 text-white">
               <h3 className="text-2xl font-bold mb-4">
                 Get 200% More Accurate Conversions
@@ -532,27 +532,27 @@ export default function PdfToWordConverter() {
       {/* Delivery Options Modal */}
       {showDeliveryModal && (
         <div className="fixed inset-0 bg-black/50 flex items-center justify-center p-4 z-50 animate-fadeIn">
-          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full p-6 animate-scaleIn">
+          <div className={`${darkMode ? "bg-gray-800" : "bg-white"} rounded-xl shadow-xl max-w-lg w-full p-6 animate-scaleIn`}>
             {deliverySuccess ? (
               <div className="text-center py-8">
                 <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-green-100 dark:bg-green-900/30 mb-4">
                   <Send className="h-6 w-6 text-green-600 dark:text-green-400" />
                 </div>
                 <h3 className="text-lg font-medium text-gray-900 dark:text-white mb-2">
-                  {activeTab === 'download' ? 'Download Complete!' : 
-                   activeTab === 'email' ? 'Check Your Inbox!' : 
-                   'WhatsApp Message Sent!'}
+                  {activeTab === 'download' ? 'Download Complete!' :
+                    activeTab === 'email' ? 'Check Your Inbox!' :
+                      'WhatsApp Message Sent!'}
                 </h3>
                 <p className="text-gray-600 dark:text-gray-300">
-                  {activeTab === 'download' ? 'Your Word document has been downloaded' : 
-                   activeTab === 'email' ? `We've sent your document to ${email}` : 
-                   `We've sent your document to ${whatsappNumber}`}
+                  {activeTab === 'download' ? 'Your Word document has been downloaded' :
+                    activeTab === 'email' ? `We've sent your document to ${email}` :
+                      `We've sent your document to ${whatsappNumber}`}
                 </p>
               </div>
             ) : (
               <>
                 <div className="flex justify-between items-center mb-6">
-                  <h3 className="text-xl  font-medium text-gray-900 dark:text-white">
+                  <h3 className={`text-xl  font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>
                     Your PDF Has Been Converted!
                   </h3>
                   <div className="hidden md:flex items-center text-green-600 dark:text-green-400">
@@ -560,59 +560,56 @@ export default function PdfToWordConverter() {
                     Ready
                   </div>
                 </div>
-                
+
                 {/* Tabs */}
-                <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
-                  <button 
+                <div className={`flex border-b ${darkMode ? "border-gray-700" : "border-gray-200"} mb-6`}>
+                  <button
                     onClick={() => setActiveTab('download')}
-                    className={`flex items-center gap-2 px-4 py-3 ${
-                      activeTab === 'download' 
-                        ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' 
-                        : 'text-gray-600 dark:text-gray-300'
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-3 ${activeTab === 'download'
+                        ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                        : `${darkMode ? "text-gray-300" : "text-gray-600"}`
+                      }`}
                   >
                     <Download className="w-4 h-4" />
                     Download
                   </button>
-                  <button 
+                  <button
                     onClick={() => setActiveTab('email')}
-                    className={`flex items-center gap-2 px-4 py-3 ${
-                      activeTab === 'email' 
-                        ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' 
-                        : 'text-gray-600 dark:text-gray-300'
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-3 ${activeTab === 'email'
+                        ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                        : `${darkMode ? "text-gray-300" : "text-gray-600"}`
+                      }`}
                   >
                     <Mail className="w-4 h-4" />
                     Email
                   </button>
-                  <button 
+                  <button
                     onClick={() => setActiveTab('whatsapp')}
-                    className={`flex items-center gap-2 px-4 py-3 ${
-                      activeTab === 'whatsapp' 
-                        ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400' 
-                        : 'text-gray-600 dark:text-gray-300'
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-3 ${activeTab === 'whatsapp'
+                        ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                        : `${darkMode ? "text-gray-300" : "text-gray-600"}`
+                      }`}
                   >
                     <Phone className="w-4 h-4" />
                     WhatsApp
                   </button>
                 </div>
-                
+
                 {/* Tab Content */}
                 {activeTab === 'download' && (
                   <div className="py-4">
-                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-6">
+                    <div className={`${darkMode ? "bg-gray-700/50" : " bg-gray-50"}  rounded-lg p-4 mb-6`}>
                       <div className="flex items-center">
                         <FileText className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{fileName.replace('.pdf', '.docx')}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Ready to download</p>
-        
+                          <p className={`font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{fileName.replace('.pdf', '.docx')}</p>
+                          <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Ready to download</p>
+
                         </div>
                       </div>
                     </div>
                     <div className="flex flex-col md:flex-row justify-end gap-4">
-                    <ExportButtonGroup />
+                      <ExportButtonGroup />
                       <button
                         onClick={handleDownload}
                         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2 justify-center"
@@ -623,20 +620,22 @@ export default function PdfToWordConverter() {
                     </div>
                   </div>
                 )}
-                
+
                 {activeTab === 'email' && (
                   <form onSubmit={handleEmailSubmit} className="py-4">
-                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-6">
+
+                    <div className={`${darkMode ? "bg-gray-700/50" : " bg-gray-50"}  rounded-lg p-4 mb-6`}>
                       <div className="flex items-center">
                         <FileText className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{fileName.replace('.pdf', '.docx')}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Will be sent to the email</p>
+                          <p className={`font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{fileName.replace('.pdf', '.docx')}</p>
+                          <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Will be sent to the email</p>
+
                         </div>
                       </div>
                     </div>
                     <div className="mb-4">
-                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label htmlFor="email" className={`block text-sm font-medium  ${darkMode ? "text-gray-300" : "text-gray-700"} mb-1`}>
                         Email Address
                       </label>
                       <input
@@ -645,12 +644,12 @@ export default function PdfToWordConverter() {
                         required
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className={`w-full px-4 py-2 border rounded-lg outline-none ${darkMode ? "border-gray-600 text-white bg-gray-700/50" : "bg-white border-gray-300 text-gray-900"}`}
                         placeholder="your@email.com"
                       />
                     </div>
                     <div className="flex flex-col md:flex-row justify-end gap-4">
-                    <ExportButtonGroup placeText={"Send As"}/>
+                      <ExportButtonGroup placeText={"Send As"} />
                       <button
                         type="submit"
                         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
@@ -661,20 +660,22 @@ export default function PdfToWordConverter() {
                     </div>
                   </form>
                 )}
-                
+
                 {activeTab === 'whatsapp' && (
                   <form onSubmit={handleWhatsAppSubmit} className="py-4">
-                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-6">
+
+                    <div className={`${darkMode ? "bg-gray-700/50" : " bg-gray-50"}  rounded-lg p-4 mb-6`}>
                       <div className="flex items-center">
                         <FileText className="w-8 h-8 text-blue-600 dark:text-blue-400 mr-3" />
                         <div>
-                          <p className="font-medium text-gray-900 dark:text-white">{fileName.replace('.pdf', '.docx')}</p>
-                          <p className="text-sm text-gray-500 dark:text-gray-400">Will be sent via WhatsApp</p>
+                          <p className={`font-medium ${darkMode ? "text-white" : "text-gray-900"}`}>{fileName.replace('.pdf', '.docx')}</p>
+                          <p className={`text-sm ${darkMode ? "text-gray-400" : "text-gray-500"}`}>Will be sent via WhatsApp</p>
+
                         </div>
                       </div>
                     </div>
                     <div className="mb-4">
-                      <label htmlFor="whatsapp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                      <label htmlFor="whatsapp" className={`block text-sm font-medium  ${darkMode ? "text-gray-300" : "text-gray-700"} mb-1`}>
                         WhatsApp Number
                       </label>
                       <input
@@ -683,7 +684,7 @@ export default function PdfToWordConverter() {
                         required
                         value={whatsappNumber}
                         onChange={(e) => setWhatsappNumber(e.target.value)}
-                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
+                        className={`w-full px-4 py-2 border rounded-lg outline-none ${darkMode ? "border-gray-600 text-white bg-gray-700/50" : "bg-white border-gray-300 text-gray-900"}`}
                         placeholder="+1 (123) 456-7890"
                       />
                       <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
@@ -691,7 +692,7 @@ export default function PdfToWordConverter() {
                       </p>
                     </div>
                     <div className="flex flex-col md:flex-row justify-end gap-4">
-                    <ExportButtonGroup  placeText={"Send As"}/>
+                      <ExportButtonGroup placeText={"Send As"} />
                       <button
                         type="submit"
                         className="px-6 py-3 bg-blue-600 hover:bg-blue-700 text-white font-medium rounded-lg transition-colors flex items-center gap-2"
@@ -702,33 +703,36 @@ export default function PdfToWordConverter() {
                     </div>
                   </form>
                 )}
-                
-                <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-700 flex justify-between">
+
+                <div className={`mt-4 pt-4 border-t ${darkMode ? "border-gray-700" : "border-gray-200"} flex justify-between`}>
                   <button
                     onClick={() => {
                       setShowDeliveryModal(false);
                       setPdfFile(null);
                       setFileName('');
                       setPreviewText('');
-                      setConvertedDocBuffer(null);                    }}
-                      className="text-sm text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white transition-colors"
-                    >
-                      Convert another file
-                    </button>
-                    <button
-  onClick={() => {
-  }}
-  className="text-base font-semibold bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-[.3rem] shadow-md transition-all flex gap-2 items-center"
->
-  <Pen size={18}/>
-  <span>Edit Content</span>
-</button>
-                  </div>
-                </>
-              )}
-            </div>
+                      setConvertedDocBuffer(null);
+                    }}
+                    className={`text-sm ${darkMode ? "text-gray-300" : "text-gray-600"}  transition-colors}`}
+                  >
+                    Convert another file
+                  </button>
+                  <button
+                    onClick={() => {
+                    }}
+                    className="text-base font-semibold bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-[.3rem] shadow-md transition-all flex gap-2 items-center"
+                  >
+                    <Pen size={18} />
+                    <span>Edit Content</span>
+                  </button>
+                </div>
+              </>
+            )}
           </div>
-        )}
-      </>
-    );
-  }
+        </div>
+      )}
+
+      <Footer/>
+    </>
+  );
+}
